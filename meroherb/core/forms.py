@@ -7,13 +7,13 @@ class LoginForm(AuthenticationForm):
     username=forms.CharField(widget=forms.TextInput(attrs={
         'placeholder':'Your username',
         'class':'usernamebox',
-
     }))
     password=forms.CharField(widget=forms.PasswordInput(attrs={
         'placeholder':'Password',
         'class':'passwordbox',
-
     }))
+
+    # No lockout logic here; handled in view
 
 class SignupForm(UserCreationForm):
     class Meta:

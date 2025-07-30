@@ -1,3 +1,6 @@
+from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import timedelta
 from userprofile.models import UserProfile
 def verify_otp(request):
     user_id = request.session.get('pending_user_id')
@@ -21,6 +24,47 @@ from django.shortcuts import redirect, render
 from .forms import SignupForm, LoginForm
 from item.models import Category, Item, ItemImageGallery
 from django.contrib import messages
+
+def custom_login(request):
+    import sys
+    if request.method == 'POST':
+        form = LoginForm(request, data=request.POST)
+        username = request.POST.get('username')
+        user_qs = User.objects.filter(username=username)
+        user = user_qs.first() if user_qs.exists() else None
+        profile = None
+        if user:
+            try:
+                profile = UserProfile.objects.get(user=user)
+            except UserProfile.DoesNotExist:
+                pass
+        if profile:
+            print(f"DEBUG: Username={username}, Attempts={profile.failed_login_attempts}, LockoutUntil={profile.lockout_until}", file=sys.stderr)
+        # Check lockout before validating form
+        if profile and profile.lockout_until and profile.lockout_until > timezone.now():
+            messages.error(request, 'Account is locked due to multiple failed login attempts. Please try again later.')
+            return render(request, 'core/login.html', {'form': form})
+        # Only validate form if not locked
+        if form.is_valid():
+            if profile:
+                profile.failed_login_attempts = 0
+                profile.lockout_until = None
+                profile.save()
+            from django.contrib.auth import login
+            login(request, form.get_user())
+            return redirect('/main/')
+        else:
+            if profile:
+                profile.failed_login_attempts += 1
+                if profile.failed_login_attempts >= 5:
+                    profile.lockout_until = timezone.now() + timedelta(minutes=15)
+                    profile.failed_login_attempts = 0
+                    messages.error(request, 'Account locked due to multiple failed login attempts. Try again in 15 minutes.')
+                profile.save()
+                print(f"DEBUG: After fail, Attempts={profile.failed_login_attempts}, LockoutUntil={profile.lockout_until}", file=sys.stderr)
+    else:
+        form = LoginForm()
+    return render(request, 'core/login.html', {'form': form})
 from item.decorators import unauthenticated_user
 from django.db.models import Avg
 from decimal import Decimal

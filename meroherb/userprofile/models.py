@@ -13,5 +13,6 @@ class UserProfile(models.Model):
     contact_number = models.CharField(max_length=15, null= True, blank=True)
     location = models.CharField(max_length=50,null = True, blank=True)
     photo = models.ImageField(default='core/images/default_user.png', blank=True, null=True)
-    # Add additional fields for the user profile (e.g., phone_number, etc.)
+    failed_login_attempts = models.IntegerField(default=0)
+    lockout_until = models.DateTimeField(blank=True, null=True)
 

@@ -11,7 +11,7 @@ app_name='core'
 urlpatterns=[
     path('signup/',views.signup,name='signup'),
     path('verify-otp/', views.verify_otp, name='verify_otp'),
-    path('login/',LoginView.as_view(template_name='core/login.html', authentication_form=LoginForm),name="login"),
+    path('login/', views.custom_login, name="login"),
     path('reset_password/', auth_views.PasswordResetView.as_view(template_name='core/password_reset.html'), name="password_reset"),
     path('reset_password_sent/', auth_views.PasswordResetDoneView.as_view(template_name='core/password_reset_sent.html'), name="password_reset_done"), 
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='core/password_reset_form.html'), name="password_reset_confirm"),
