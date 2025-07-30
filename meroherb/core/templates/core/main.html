@@ -76,6 +76,59 @@
 
   <main>
 
+    <!-- Inactivity Modal -->
+    <div id="inactivity-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+      <div style="background:#fff; padding:2rem; border-radius:10px; text-align:center; max-width:350px; margin:auto;">
+        <h2>Session Expiring</h2>
+        <p id="inactivity-timer">You will be logged out in <span id="timer-seconds">10</span> seconds due to inactivity.</p>
+        <button id="stay-logged-in" style="padding:0.5rem 1.5rem; background:#FF7426; color:#fff; border:none; border-radius:5px; cursor:pointer;">Stay Logged In</button>
+      </div>
+    </div>
+
+    <script>
+      let inactivityTime = 60 * 1000; // 60 seconds
+      let warningTime = 50 * 1000; // 50 seconds
+      let timer, warningTimer;
+      let modal = document.getElementById('inactivity-modal');
+      let timerSeconds = document.getElementById('timer-seconds');
+      let stayBtn = document.getElementById('stay-logged-in');
+
+      function resetTimers() {
+        clearTimeout(timer);
+        clearTimeout(warningTimer);
+        if (modal) modal.style.display = 'none';
+        warningTimer = setTimeout(showWarning, warningTime);
+        timer = setTimeout(logoutUser, inactivityTime);
+      }
+
+      function showWarning() {
+        let secondsLeft = 10;
+        if (modal) modal.style.display = 'flex';
+        if (timerSeconds) timerSeconds.textContent = secondsLeft;
+        let countdown = setInterval(() => {
+          secondsLeft--;
+          if (timerSeconds) timerSeconds.textContent = secondsLeft;
+          if (secondsLeft <= 0) clearInterval(countdown);
+        }, 1000);
+      }
+
+      function logoutUser() {
+        window.location.href = "{% url 'dashboard:logout' %}";
+      }
+
+      if (stayBtn) {
+        stayBtn.onclick = function() {
+          resetTimers();
+        };
+      }
+
+      ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+        document.addEventListener(evt, resetTimers);
+      });
+
+      resetTimers();
+    </script>
+
     <!--
       - BANNER
     -->

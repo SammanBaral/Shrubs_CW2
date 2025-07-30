@@ -120,6 +120,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+
+# Session expires after 60 seconds of inactivity
+SESSION_COOKIE_AGE = 60
+SESSION_SAVE_EVERY_REQUEST = True
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
