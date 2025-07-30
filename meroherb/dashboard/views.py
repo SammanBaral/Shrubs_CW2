@@ -21,6 +21,19 @@ def dashboardView(request):
     return render(request,'dashboard/dashboard.html',{'items':items})
 
 def logout_view(request):
+    from core.models import AuditLog
+    user = request.user
+    AuditLog.objects.create(
+        user=user,
+        user_role='admin' if user.is_superuser else 'customer',
+        action='LOGOUT',
+        entity='User',
+        entity_id=str(user.id),
+        old_value=None,
+        new_value=None,
+        ip_address=request.META.get('REMOTE_ADDR'),
+        user_agent=request.META.get('HTTP_USER_AGENT')
+    )
     logout(request)
     return redirect ("core:login")
 def sellerprofile(request, pk):
@@ -43,7 +56,24 @@ def sellerprofile(request, pk):
     if request.method == 'POST':
         star_rating = request.POST.get('rating')
         seller_review = request.POST.get('seller_review')
-        Comment.objects.create(user=request.user, seller=seller_info, rating=star_rating, text=seller_review)
+        comment = Comment.objects.create(user=request.user, seller=seller_info, rating=star_rating, text=seller_review)
+        # Audit log for seller review
+        from core.models import AuditLog
+        AuditLog.objects.create(
+            user=request.user,
+            user_role='admin' if request.user.is_superuser else 'customer',
+            action='CREATE_SELLER_REVIEW',
+            entity='Comment',
+            entity_id=str(comment.id),
+            old_value=None,
+            new_value={
+                'seller': str(seller_info),
+                'rating': star_rating,
+                'text': seller_review
+            },
+            ip_address=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT')
+        )
         return redirect('dashboard:sellerprofile', pk=pk)
 
 

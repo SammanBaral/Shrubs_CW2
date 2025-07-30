@@ -27,9 +27,17 @@ def userprofile(request):
             user_profile_form = UserProfileForm(request.POST, instance=user)
             try:
                 if user_profile_form.is_valid():
+                    old_profile = {
+                        'first_name': user_profile_instance.first_name if user_profile_instance else '',
+                        'last_name': user_profile_instance.last_name if user_profile_instance else '',
+                        'email': user_profile_instance.email if user_profile_instance else '',
+                        'contact_number': user_profile_instance.contact_number if user_profile_instance else '',
+                        'location': user_profile_instance.location if user_profile_instance else ''
+                    }
                     profile = user_profile_form.save(commit=False)
                     # If email changed or not verified, generate OTP and send email
-                    if not profile.is_email_verified or (user_profile_instance and profile.email != user_profile_instance.email):
+                    otp_needed = not profile.is_email_verified or (user_profile_instance and profile.email != user_profile_instance.email)
+                    if otp_needed:
                         import random
                         otp = str(random.randint(100000, 999999))
                         profile.email_otp = otp
@@ -44,9 +52,52 @@ def userprofile(request):
                         email.send(fail_silently=False)
                         messages.info(request, 'OTP sent to your email. Please verify.')
                         profile.save()
+                        # Audit log for profile update
+                        from core.models import AuditLog
+                        try:
+                            log = AuditLog.objects.create(
+                                user=request.user,
+                                user_role='admin' if request.user.is_superuser else 'customer',
+                                action='UPDATE_PROFILE',
+                                entity='UserProfile',
+                                entity_id=str(profile.id),
+                                old_value=old_profile,
+                                new_value={
+                                    'first_name': profile.first_name,
+                                    'last_name': profile.last_name,
+                                    'email': profile.email,
+                                    'contact_number': profile.contact_number,
+                                    'location': profile.location
+                                },
+                                ip_address=request.META.get('REMOTE_ADDR'),
+                                user_agent=request.META.get('HTTP_USER_AGENT')
+                            )
+                            print('AuditLog created:', log)
+                        except Exception as log_error:
+                            print('AuditLog creation failed:', log_error)
                         return render(request, 'userprofile/otp_verify.html', {'otp_form': otp_form, 'user': user})
                     else:
                         profile.save()
+                        messages.success(request, 'User details updated successfully.')
+                        # Audit log for profile update
+                        from core.models import AuditLog
+                        AuditLog.objects.create(
+                            user=request.user,
+                            user_role='admin' if request.user.is_superuser else 'customer',
+                            action='UPDATE_PROFILE',
+                            entity='UserProfile',
+                            entity_id=str(profile.id),
+                            old_value=old_profile,
+                            new_value={
+                                'first_name': profile.first_name,
+                                'last_name': profile.last_name,
+                                'email': profile.email,
+                                'contact_number': profile.contact_number,
+                                'location': profile.location
+                            },
+                            ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT')
+                        )
                         messages.success(request, 'User details updated successfully.')
             except ValidationError as e:
                 messages.error(request, f'Error updating user details: {e}')
@@ -61,9 +112,35 @@ def userprofile(request):
                     user_profile_instance.is_email_verified = True
                     user_profile_instance.email_otp = ''
                     user_profile_instance.save()
+                    # Audit log for email verification
+                    from core.models import AuditLog
+                    AuditLog.objects.create(
+                        user=request.user,
+                        user_role='admin' if request.user.is_superuser else 'customer',
+                        action='VERIFY_EMAIL',
+                        entity='UserProfile',
+                        entity_id=str(user_profile_instance.id),
+                        old_value=None,
+                        new_value={'is_email_verified': True},
+                        ip_address=request.META.get('REMOTE_ADDR'),
+                        user_agent=request.META.get('HTTP_USER_AGENT')
+                    )
                     messages.success(request, 'Email verified successfully!')
                     return redirect('userprofile:userprofile')
                 else:
+                    # Audit log for failed email verification
+                    from core.models import AuditLog
+                    AuditLog.objects.create(
+                        user=request.user,
+                        user_role='admin' if request.user.is_superuser else 'customer',
+                        action='FAILED_VERIFY_EMAIL',
+                        entity='UserProfile',
+                        entity_id=str(user_profile_instance.id),
+                        old_value=None,
+                        new_value={'attempted_otp': otp_input},
+                        ip_address=request.META.get('REMOTE_ADDR'),
+                        user_agent=request.META.get('HTTP_USER_AGENT')
+                    )
                     messages.error(request, 'Invalid OTP. Please try again.')
                     return render(request, 'userprofile/otp_verify.html', {'otp_form': otp_form, 'user': user})
 
@@ -72,6 +149,19 @@ def userprofile(request):
                 password_change_form = PasswordChangeForm(user, request.POST)
                 if password_change_form.is_valid():
                     password_change_form.save()
+                    # Audit log for password change
+                    from core.models import AuditLog
+                    AuditLog.objects.create(
+                        user=request.user,
+                        user_role='admin' if request.user.is_superuser else 'customer',
+                        action='CHANGE_PASSWORD',
+                        entity='User',
+                        entity_id=str(request.user.id),
+                        old_value=None,
+                        new_value=None,
+                        ip_address=request.META.get('REMOTE_ADDR'),
+                        user_agent=request.META.get('HTTP_USER_AGENT')
+                    )
                     messages.success(request, 'Password changed successfully.')
             except ValidationError as e:
                 messages.error(request, f'Error changing password: {e}')

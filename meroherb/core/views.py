@@ -97,6 +97,25 @@ def signup(request):
             user_profile.photo = 'default_user.png'
             user_profile.save()
 
+            # Audit log for signup
+            from core.models import AuditLog
+            AuditLog.objects.create(
+                user=user,
+                user_role='admin' if user.is_superuser else 'customer',
+                action='SIGNUP',
+                entity='User',
+                entity_id=str(user.id),
+                old_value=None,
+                new_value={
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name
+                },
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT')
+            )
+
             email = EmailMessage(
                 'Your Email Verification OTP',
                 f'Your OTP is: {otp}',

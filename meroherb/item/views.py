@@ -5,6 +5,7 @@ from .decorators import allowed_users
 from .forms import NewItemForm, EditItemForm, BillForm
 from .models import Category, Item, review,ItemImage, Bill
 from .models import ItemImageGallery, ItemImage
+from core.models import AuditLog
 from django.db import IntegrityError
 from decimal import Decimal
 from django.http import HttpResponse
@@ -151,6 +152,24 @@ def new(request):
                 item_image = ItemImage.objects.create(item=item, image=image_file)
                 item_image_gallery.images.add(item_image)
 
+            # Audit log for product creation
+            AuditLog.objects.create(
+                user=request.user,
+                user_role=getattr(request.user, 'role', 'seller'),
+                action='CREATE_PRODUCT',
+                entity='Product',
+                entity_id=str(item.id),
+                old_value=None,
+                new_value={
+                    'name': item.name,
+                    'price': str(item.price),
+                    'category': str(item.category),
+                    'created_by': str(item.created_by)
+                },
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT')
+            )
+
             messages.success(request, "New item created")
             return redirect('item:detail', pk=item.id)
     else:
@@ -165,8 +184,24 @@ def new(request):
 @login_required
 def delete(request, pk):
     item = get_object_or_404(Item, pk= pk, created_by=request.user)
+    # Audit log for product delete
+    AuditLog.objects.create(
+        user=request.user,
+        user_role=getattr(request.user, 'role', 'seller'),
+        action='DELETE_PRODUCT',
+        entity='Product',
+        entity_id=str(item.id),
+        old_value={
+            'name': item.name,
+            'price': str(item.price),
+            'category': str(item.category),
+            'created_by': str(item.created_by)
+        },
+        new_value=None,
+        ip_address=request.META.get('REMOTE_ADDR'),
+        user_agent=request.META.get('HTTP_USER_AGENT')
+    )
     item.delete()
-
     return redirect('item:browse')
 
 
@@ -187,6 +222,12 @@ def edit(request, pk):
                 'title': 'New item',}
                 )
 
+            old_item = {
+                'name': item.name,
+                'price': str(item.price),
+                'category': str(item.category),
+                'created_by': str(item.created_by)
+            }
             form.save()
 
             # Clear existing images from the gallery
@@ -196,6 +237,24 @@ def edit(request, pk):
             for image_file in image_files:
                 item_image = ItemImage.objects.create(item=item, image=image_file)
                 item_image_gallery.images.add(item_image)
+
+            # Audit log for product update
+            AuditLog.objects.create(
+                user=request.user,
+                user_role=getattr(request.user, 'role', 'seller'),
+                action='UPDATE_PRODUCT',
+                entity='Product',
+                entity_id=str(item.id),
+                old_value=old_item,
+                new_value={
+                    'name': item.name,
+                    'price': str(item.price),
+                    'category': str(item.category),
+                    'created_by': str(item.created_by)
+                },
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT')
+            )
 
             messages.success(request, "Item updated successfully")
             return redirect('item:detail', pk=item.id)
@@ -277,6 +336,28 @@ def buy_item(request, pk):
 
         generated_bill_no = bill.bill_no
         bill.save()
+        # Audit log for order placement
+        from core.models import AuditLog
+        AuditLog.objects.create(
+            user=request.user,
+            user_role='admin' if request.user.is_superuser else 'customer',
+            action='PLACE_ORDER',
+            entity='Bill',
+            entity_id=str(bill.id),
+            old_value=None,
+            new_value={
+                'item': str(item),
+                'quantity': item.quantity_available,
+                'total_amount': item.price,
+                'seller': item.created_by.username,
+                'discount_per': item.discount,
+                'discount_price': str(discounted_price),
+                'delivery': request.user.userprofile.location,
+                'contact_info': request.user.userprofile.contact_number
+            },
+            ip_address=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT')
+        )
         # Send email to the seller
         template = get_template('item/bill_template.html')
         html = template.render({'bill': bill})
