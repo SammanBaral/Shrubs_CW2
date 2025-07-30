@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ item.name }}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'detail.css'%}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;600;800&family=Lobster&display=swap">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+
+<header>
+    {% include 'dashboard/navbar.html'%}
+</header>
+
+<body>
+    {% for msg in messages%}
+    <div class="alert alert-warning"  role="alert">
+      {{msg}}
+  </div>
+    {%endfor%}
+    <div class="main-container">
+
+
+    <div class="image_section">
+        <div class="main_image">
+            <a href="#" class="clickable-image" data-main-image="{{ item_image_gallery.images.first.image.url }}">
+                <img src="{{ item_image_gallery.images.first.image.url }}">
+            </a>
+        </div>
+        <div class="sub_image">
+            {% for image in item_image_gallery.images.all|slice:"0:" %}
+                <div class="other_image">
+                    <a href="#" class="clickable-image" data-main-image="{{ image.image.url }}">
+                        <img src="{{ image.image.url }}" alt="Other Image">
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    
+    
+
+        <div class="product_details_main">
+            <div class="product_upper">
+                <div class="product_detail">
+                    <span class="product_name"> {{item.name}}</span>
+
+                    <div class="category_section">
+                        <span class="category_text">Category:</span>
+                        <strong>{{item.category}} </strong>
+                    </div>
+                </div>
+                <div class="product_detail_mid">
+                    <div class="product_quantity">
+                        <span style="color:#545454;"> QUANTITY</span>
+                        <strong>{{item.quantity_available}}</strong>
+                    </div>
+                    <div class="product_price">
+                        <span style="color: #545454;">PRICE</span>
+                        <section style="font-size: 1rem; color: #008148;">
+                            {% if item.discounted_price %}
+                            <p class="price"><strong>${{ item.discounted_price|floatformat:2 }}</strong></p>
+                            {% if item.discount > 0 %}
+                                <del>${{ item.price }}</del>
+                                <span style="font-size: 0.91rem;">({{item.discount}}% off) </span>
+
+                            {% endif %}
+                            {% else %}
+                            <p class="price"><strong>${{ item.price }}</strong></p>
+                            {% endif %}
+
+                        </section>
+                    </div>
+                </div>
+
+                {% if request.user == item.created_by %}
+                <div class="product_edit_section">
+                    <a href="{% url 'item:edit' item.id %}">
+                        <div class="edit_btn">Edit </div>
+
+                    </a>
+                    <a href="{% url 'item:delete' item.id %}">
+                        <div class="delete_btn"> Delete </div>
+                    </a>
+
+                </div>
+                {% else %}
+                <div class="product_buy_section">
+                    {% comment %} <p>Item ID: {{ item.id }}</p> {% endcomment %}
+                
+                    <form method="post" action="{% url 'item:buy_item' item.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="buy_btn">Buy</button>
+                    </form>
+                </div>
+                
+                {%endif%}
+
+                {% comment %} {% else %}
+                <div class="product_buy_section">
+                    <a href="{% url 'chatting:new' item.id %}">
+                        <div class="buy_btn">
+                            Buy
+                        </div>
+                    </a>
+                </div>
+                {%endif%} {% endcomment %}
+
+
+
+            </div>
+
+            <div class="product_lower">
+
+                <div class="window_navigation">
+                    <span class="nav_btn">Description</span>
+                    <span class="nav_btn">Usage and Benefits</span>
+                    <span class="nav_btn">Seller info</span>
+                    <span class="nav_btn">Review</span>
+                </div>
+
+                <div class="content_box">
+
+                    <div class="window_content">
+                        {{item.description}}
+    
+                    </div>
+
+
+                    <div class="window_content">
+
+                        {{item.usage_and_benefits}}
+                        
+                    </div>
+                    <div class="window_content">
+    
+                        {{item.created_by.username}}
+                        
+                    </div>
+
+                    <div class="window_content" id="rating_window">
+                        {% include 'item/rating.html'%}
+                    </div>
+
+                </div>
+
+                
+                
+
+            </div>
+
+        </div>
+
+        
+    </div>
+</div>
+
+
+    <script>
+        const tabs_btn=document.querySelectorAll('.nav_btn');
+        const body_content= document.querySelectorAll('.window_content');
+
+        tabs_btn.forEach((btn,index)=>{
+            btn.addEventListener('click',()=>{
+                tabs_btn.forEach(btn=>{btn.classList.remove('active')})
+                btn.classList.add('active');
+
+                body_content.forEach(content=>{content.classList.remove('active')})
+                body_content[index].classList.add('active');
+
+            })
+        })
+
+    </script>
+    <script src="{% static 'detail.js' %}"></script>
+
+
+</body>
+
+    {% include 'dashboard/footer.html'%}
+
+
+</html>

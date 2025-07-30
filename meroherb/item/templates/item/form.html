@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{% static 'form.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;600;800&family=Lobster&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&family=Noto+Sans+JP&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <script src="{% static 'Profile.js'%}" defer></script>
+
+ 
+
+  <title>{{ title }}</title>
+</head>
+<header>
+  {% include 'dashboard/navbar.html'%}
+</header>
+
+<body>
+  {% for msg in messages%}
+  <div class="alert alert-warning" style="z-index: -1;" role="alert">
+    {{msg}}
+</div>
+{%endfor%}
+
+  <div class="parent_wrapper">
+    <div class="parent_div">
+      <div class="left_image_section">
+        <span class="image_text">
+          Ready to embark on this herbal journey?
+          <br>
+          🌿Bring Nature's Best to Market - Grow, List, Thrive!
+          <br>
+
+
+        </span>
+        <img src="{% static 'item/images/form_left.jpg'%}">
+      </div>
+      
+
+      <div class="form_parent">
+        <div class="item_text">
+          <span>{{title}}</span>
+        </div>
+        <div class="form_body">
+          <form method="POST" action="." enctype="multipart/form-data" class="item_form">
+            {% csrf_token %}
+            <div class="category_row">
+              {% if form.fields.category %} {% if form.initial.category %}
+              <!-- 'Category' field is not rendered when editing -->
+              {% else %}
+              <div class="category_field">
+                <span>Category</span>
+                {{ form.category }}
+              </div>
+              {% endif %} {% endif %}
+            </div>
+            <div class="first_row">
+              <div class="name_field">
+                <span>Name</span>
+                {{form.name}}
+              </div>
+              <div class="sname_field">
+                <span>Scientific Name</span>
+                {{form.scientific_name}}
+              </div>
+            </div>
+            <div class="second_row">
+              <div class="price_field">
+                <span>Price</span>
+                {{form.price}}
+              </div>
+              <div class="quantity_field">
+                <span>Quantity available</span>
+                {{form.quantity_available}}
+              </div>
+            </div>
+            <div class="third_row">
+              <div class="usage_field">
+                <span>Usage and Benefit</span>
+                {{form.usage_and_benefits}}
+              </div>
+              <div class="description_field">
+                <span>Description</span>
+                {{form.description}}
+              </div>
+            </div>
+            <div class="fourth_row">
+              <div class="image_field">
+                <span>Image</span>
+
+                <input required name="images" type="file" multiple class="image_input">
+              </div>
+              <div class="discount_field">
+                <span>Discount</span>
+                {{form.discount}}
+              </div>
+            </div>
+            <div class="submit_btn">
+              <button>Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+
+
+  </div>
+
+
+</body>
+<footer>
+  {%include 'dashboard/footer.html'%}
+</footer>
+
+</html>

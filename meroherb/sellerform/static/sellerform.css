@@ -1,0 +1,180 @@
+:root{
+    --cultured: hsl(0, 0%, 93%);
+    --fs-title: 1rem;
+    --weight-600: 600;
+    --border-radius-md: 10px;
+    --davys-gray: hsl(0, 0%, 33%);
+    --fs-8: 0.813rem;
+    --white: hsl(0, 100%, 100%);
+
+
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+main{
+    display: flex;
+    flex-flow: column wrap;
+    gap: 6vmin;
+}
+.parent_wrapper{
+    display: flex;
+    flex-flow:row wrap;
+    position: relative;
+    gap: 2vmax;
+    width: 100vw;
+    height: 30rem;
+    display: flex;
+    align-items: center;
+    margin-top:4vmin;
+    justify-content: center;
+    background: url('./sellerform/images/bgseller.png');
+}
+.main_text{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 2vmin;
+    width: 47vmax;
+
+}
+
+.parent-wrapper_text{
+    color: white;
+    font-weight: 600;
+    font-family: Poppins, sans-serif;
+    font-size: 4rem;
+}
+.parent-wrapper_subtext{
+    color: #545454;
+    font-family: Poppins, sans-serif;
+    font-size: 1rem;
+    
+
+}
+.parent_div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 28%;
+    height: 90%;
+    border: 1px solid var(--cultured);
+    border-radius: var(--border-radius-md);
+
+}
+
+.bottom_content_parent{
+    display: flex;
+    flex-flow:column wrap;
+    width: 75rem;
+    gap: 3vmin;
+    align-items: center;
+    align-self: center;
+    height: 30rem;
+    margin-bottom: 12vmin;
+}
+.why_sell-text{
+    font-size: 2.5rem;
+    font-family: Poppins,sans-serif;
+}
+.content_grid{
+    display: grid;
+    height: 20rem;
+    color: var(--davys-gray);
+    font-size: 1.1rem;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+}
+.why_content{
+    display: flex;
+    flex-flow: column wrap;
+    gap: 2vmin;
+    margin-bottom: 20px;
+    margin-right: 41px;
+    padding: 18px;
+    border: 1px solid var(--cultured);
+    border-radius: var(--border-radius-md);
+    font-family: Poppins, sans-serif;
+
+}
+.content_title{
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    gap: 1vmax;
+}
+.content_title img{
+    width: 3.5rem;
+    height: 3.5rem;
+}
+
+.form_parent{
+    display: flex;  
+    justify-content: center;
+    height: 100%;
+    width: 35rem;
+}
+
+.form_body{
+    display: flex;
+    flex-flow: column wrap;
+    height: 100%;
+    align-items: center;
+    gap: 3.4vmin;
+    width: 100%;
+}
+
+.form_body form{
+    display: flex;
+    flex-flow: column wrap;
+    align-items: center;
+    gap: 2vmin;
+    height: 50%;
+}
+.upper_form_text{
+    display: flex;
+    flex-flow: column wrap;
+    gap: 2vmin;
+    align-items: center;
+    margin-top: 2rem;
+}
+.create_text{
+    font-size: 1.7rem;
+    font-family: Poppins,sans-serif;
+    font-weight: 600;
+}
+.user_greetings{
+    font-size: 0.9rem;
+    font-family: Poppins,sans-serif;
+    font-weight: 600;
+    color: #545454;
+}
+.form_body form label{
+    font-size: 1.2rem;
+    font-family: Poppins,sans-serif;
+}
+.username_input{
+    border: 1px solid var(--cultured);
+    border-radius: var(--border-radius-md);
+    height: 2.3rem;
+    width: 15rem;
+    font-size: 1rem;
+    font-family: Poppins,sans-serif;
+}
+.request_btn{
+    width: 10vw;
+    align-self: center;
+    border-radius: 0.4rem;
+    height: 4.5vmin;
+    border: none;
+    background-color: black;
+    color: white;
+    font-family: Poppins,sans-serif;
+    font-size: 1.2rem;
+    cursor: pointer;
+}

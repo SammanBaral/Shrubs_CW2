@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>New Conversation</title>
+</head>
+<body>
+    <h1 class="mb-6 text-3xl">New conversation</h1>
+    <form
+            method="POST"
+            action="."
+          >
+            {% csrf_token %}
+            <div class="space-y-4">
+                {{form.as_p}}
+            </div>
+            {% if form.errors or form.non_field_errors%}
+                <div class="mb-3 p-6 bg-red-100 rounded-xl">
+                    {% for field in form %}
+                        {{field.errors}}
+                    {% endfor %}
+
+                    {{form.non_field_errors}}
+                </div>
+            {% endif %}
+
+            <button class="mt-6 py-4 px-8 text-lg bg-teal-500 hover:bg-teal-700 rounded-xl text-white">Send</button>
+    </form>
+              {% comment %} {% if form.fields.category %} {% if form.initial.category %}
+              <!-- 'Category' field is not rendered when editing -->
+              {% else %}
+              <div class="category_field">
+                <span>Category</span>
+                {{ form.category }}
+              </div>
+              {% endif %} {% endif %}
+            </div>
+            <div class="first_row">
+              <div class="name_field">
+                <span>Name</span>
+                {{form.name}}
+              </div>
+            <div class="submit_btn">
+              <button>Send</button>                       
+            </div> {% endcomment %}
+
+</body>
+
+</html>

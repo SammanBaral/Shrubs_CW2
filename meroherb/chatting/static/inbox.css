@@ -1,0 +1,78 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+:root{
+    --border-radius-md: 10px;
+    --cultured: hsl(0, 0%, 93%);
+    --fs-5: 1rem;
+    --weight-600: 600;
+}
+body{
+    display: flex;
+    flex-flow: column wrap;
+    gap: 7vmin;
+    height: 100%;
+}
+a{
+    text-decoration: none;
+}
+.parent{
+    padding-top: 1.7vmin;
+    display: flex;
+    flex-flow: column wrap;
+    gap: 6.5vmin;
+    height: 80vh;
+    width: 40%;
+    border: 1.6px solid var(--cultured);
+    border-radius: var(--border-radius-md);
+    overflow-y: auto;
+    margin-left: 1.6vmax;
+
+   
+}
+.parent::-webkit-scrollbar{
+    display: none ;
+}
+.username{
+    font-family: Poppins,sans-serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: .6px;
+    margin-left: 3.4vmax;
+
+}
+.message_header{
+    font-family: Poppins,sans-serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    line-height: .6px;
+
+}
+.message_holder_parent{
+    display: flex;
+    flex-flow: column wrap;
+    align-items: flex-start;
+    width: 45%;
+    justify-content: space-evenly;
+    gap: 4vmin;
+    margin-left: 3.4vmax;
+    
+}
+
+.message_box{
+    width: 100%;
+    display: flex ;
+    gap: 1.2vmax;
+    align-self: center;
+
+}
+.message_info{
+    display: flex;
+    flex-flow: column wrap;
+    gap: 1.1vmin;
+    color: black;
+    font-family: Poppins,sans-serif;
+    font-weight: 300;
+    font-size: 1rem;
+}

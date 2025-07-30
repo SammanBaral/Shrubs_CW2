@@ -1,0 +1,233 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>HTML 5 Boilerplate</title>
+  <link rel="stylesheet" href="{% static 'Profile.css'%}" />
+  <script src="{% static 'Profile.js'%}" defer></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Lobster" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;600;800&family=Lobster&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+  <div>{% include 'dashboard/navbar.html' %}</div>
+  <div class="bg_cover">
+    <div class="parent_wrapper">
+      <div class="user_parent">
+        <div class="user_img">
+          <img src="{{ seller_info.selleraccount.image.url }}" />
+        </div>
+
+        <div class="user_data">
+          <div class="names">
+            <div class="f_l_name">{{seller_info.first_name}} {{seller_info.last_name}}</div>
+            <div class="user_name">@{{seller_info.username}}</div>
+          </div>
+          <div class="location">
+            <i class="fa-solid fa-location-dot"></i>
+            <span class="address">KTM,Nepal</span>
+          </div>
+          <span class="rating_seller">
+            {% if avg_rating %}
+            {{avg_rating|floatformat:2}}
+            {% for i in "12345" %}
+            {% if i|add:"0" <= avg_rating %} <i class="fa fa-star checked" id="check-star"></i>
+              {% else %}
+              <i class="fa fa-star" id="check-star"></i>
+              {% endif %}
+              {% endfor %}
+              {% else %}
+              <!-- If there are no ratings -->
+              <i class="fa fa-star" id="star"></i>
+              <i class="fa fa-star" id="star"></i>
+              <i class="fa fa-star" id="star"></i>
+              <i class="fa fa-star" id="star"></i>
+              <i class="fa fa-star" id="star"></i>
+              &nbsp;<span>No ratings</span>
+              {% endif %}
+            
+            </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content_parent">
+      <div class="navigation_section">
+        <div class="products_btn" onclick="showTab('tab1')">Products</div>
+        <div class="feedback_btn" onclick="showTab('tab2')">Feedback</div>
+      </div>
+
+      <!--content contains products and feedback-->
+
+      <div class="content_body" id="tab1">
+        {% for item in items_with_images%}
+        <div class="card bg-herb-box rounded-xl mb-6">
+          <a href="{% url 'item:detail' item.product.id %}">
+              <div class="card-image" style="background-image: url('{{item.image_url}}');position: relative;">
+                {% if item.product.discount > 1.00%}
+                <p class="showcase-badge">{{item.product.discount}}%</p>
+                {%else%}
+                {%endif%}
+              </div>
+        
+              <div style="display: flex; flex-flow: column wrap; gap: 1.2vh;">
+                  <h2 class="text-xl text-black font-semibold" style="text-decoration: none;">{{ item.product.name }}</h2>
+                  <p class="text-gray-500">
+                    {% if item.product.discounted_price %}
+                    <p style="text-decoration: none; color: hsl(152, 51%, 52%);">${{ item.product.discounted_price|floatformat:2 }}</p>
+               
+                    {% else %}
+                    <p style="color: hsl(152, 51%, 52%);">${{ item.product.price }}</p>
+                    {% endif %}
+                  </p>
+                  <!-- Check for average_rating existence -->
+                  {% if item.product.average_rating %}
+                      <div class="rating_showcase">
+                          <!-- Display stars based on average_rating -->
+                          {% for i in "12345" %}
+                              {% if i|add:"0" <= item.product.average_rating %}
+                                  <i class="fa fa-star checked" id="check-star"></i>
+                              {% else %}
+                                  <i class="fa fa-star" id="check-star"></i>
+                              {% endif %}
+                          {% endfor %}
+                          <p>Rating: {{ item.product.average_rating|floatformat:2 }}</p>
+                      </div>
+                      <!-- End of star display -->
+                  {% else %}
+                      <!-- If there are no ratings -->
+                      <div class="rating_showcase">
+                          <i class="fa fa-star" id="star"></i>
+                          <i class="fa fa-star" id="star"></i>
+                          <i class="fa fa-star" id="star"></i>
+                          <i class="fa fa-star" id="star"></i>
+                          <i class="fa fa-star" id="star"></i>
+                          &nbsp;<span>No ratings</span>
+                      </div>
+                  {% endif %}
+              </div>
+          </a>
+      </div>
+      {%endfor%}
+    
+      </div>
+
+
+      <div class="content_body" id="tab2">
+        <div class="content_feedback">
+
+          <div class="form_parent">
+
+
+            <p style="font-weight:600;">Write a review</p>
+            <form method="Post">
+              {% csrf_token %}
+
+              <div class="rating">
+
+                <input type="radio" id="star5" name="rating" value="5" />
+                <label class="star" for="star5" title="Awesome" aria-hidden="true"></label>
+                <input type="radio" id="star4" name="rating" value="4" />
+                <label class="star" for="star4" title="Great" aria-hidden="true"></label>
+                <input type="radio" id="star3" name="rating" value="3" />
+                <label class="star" for="star3" title="Very good" aria-hidden="true"></label>
+                <input type="radio" id="star2" name="rating" value="2" />
+                <label class="star" for="star2" title="Good" aria-hidden="true"></label>
+                <input type="radio" id="star1" name="rating" value="1" />
+                <label class="star" for="star1" title="Bad" aria-hidden="true"></label>
+
+              </div>
+              <div class="comment_box">
+                <textarea name="seller_review" placeholder="write a review" rows="6" cols="50" id="review-text"
+                  required></textarea>
+                <input type="submit" class="post_btn" value="Post">
+
+              </div>
+
+            </form>
+
+
+            {% for x in comments%}
+            <div class="comment_body">
+              <div class="comment_user">
+                <div style="border-radius:50%; height: 50px; width: 50px;">
+                  <img src="{% static './dashboard/images/user.png'%}"
+                    style="height: 100%; width: 100%; object-fit: cover;">
+                </div>
+                <div class="user_rat_info">
+                  <div class="user_upper">  
+                    <h1> @{{x.user}}</h1>
+                    <span>{{x.created_at}}</span>
+                  </div>
+                 
+                  <div class="rating_star">
+
+                    {% if x.rating > 0 %}
+                    <i class="fa fa-star {% if x.rating  < 1 %} no-checked {% else %} checked {% endif %} "
+                      id="check-star"></i>
+                    <i class="fa fa-star {% if x.rating  < 2 %} no-checked {% else %} checked {% endif %} "
+                      id="check-star"></i>
+                    <i class="fa fa-star {% if x.rating  < 3 %} no-checked {% else %} checked {% endif %} "
+                      id="check-star"></i>
+                    <i class="fa fa-star {% if x.rating  < 4 %} no-checked {% else %} checked {% endif %} "
+                      id="check-star"></i>
+                    <i class="fa fa-star {% if x.rating  < 5 %} no-checked {% else %} checked {% endif %} "
+                      id="check-star"></i>
+                    <hr>
+                    {% else %}
+
+                    <i class="fa fa-star " id="star"></i>
+                    <i class="fa fa-star" id="star"></i>
+                    <i class="fa fa-star" id="star"></i>
+                    <i class="fa fa-star" id="star"></i>
+                    <i class="fa fa-star" id="star"></i>
+                    &nbsp;<span>No ratings</span>
+
+                    <hr>
+
+                    {% endif %}
+
+                  </div>
+
+
+                </div>
+
+              </div>
+              <div class="comment">
+                <span>{{x.text}}</span>
+
+              </div>
+
+
+
+            </div>
+            {%endfor%}
+
+          </div>
+
+
+
+        </div>
+      </div>
+    </div>
+    <!--end of content-->
+  </div>
+
+
+
+  <script>
+    // Assuming you have an input field with id="comment_text"
+    document.getElementById('comment_text').value = ''; // Clears the input field after submission
+  </script>
+</body>
+
+</html>

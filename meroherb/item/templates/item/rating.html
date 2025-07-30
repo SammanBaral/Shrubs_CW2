@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<style>
+  .checked {
+    color: orange;
+  }
+
+  .rating {
+    margin-top: 40px;
+    border: none;
+    float: left;
+
+  }
+
+  .rating>label {
+    color: #9C9C9C;
+    font-size: 7px;
+    float: right;
+  }
+
+  .form_parent {
+    display: flex;
+    flex-flow: column wrap;
+    gap: 2vmin;
+    
+  }
+
+  .form_parent form {
+    display: flex;
+    flex-flow: column wrap;
+  }
+
+  .post_btn {
+    align-self: flex-end;
+    margin-top: 1vmin;
+    border-radius: 0.8rem;
+    border: none;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    background-color: black;
+    height: 2.3vmax;
+    width: 9vmax;
+
+  }
+
+  .rating>label:before {
+    margin: 5px;
+    font-size: 2em;
+    font-family: FontAwesome;
+    content: "\f005";
+    display: inline-block;
+  }
+
+  .rating>input {
+    display: none;
+  }
+
+  .rating>input:checked~label,
+  .rating:not(:checked)>label:hover,
+  .rating:not(:checked)>label:hover~label {
+    color: #F79426;
+  }
+
+  .rating>input:checked+label:hover,
+  .rating>input:checked~label:hover,
+  .rating>label:hover~input:checked~label,
+  .rating>input:checked~label:hover~label {
+    color: #FECE31;
+  }
+
+
+  #star {
+    font-size: 10px;
+    color: grey;
+  }
+
+  #check-star {
+    font-size: 10px;
+  }
+
+  .comment_body {
+    display: flex;
+    flex-flow: column wrap;
+    gap: 1vmin;
+  }
+
+  .comment_user {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3vmax;
+  }
+
+  .comment_user h1 {
+    color: black;
+    font-size: 15px;
+
+  }
+
+  .comment {
+    color: black;
+    font-size: 16px;
+
+  }
+
+  .user_rat_info {
+    display: flex;
+    flex-flow: column wrap;
+  }
+
+  .user-comment-section {
+    display: flex;
+    flex-flow: column wrap;
+
+
+  }
+
+  .form_parent form {
+    width: 70%;
+    display: flex;
+    flex-flow: column wrap;
+  }
+
+  .form_parent form textarea {
+    display: flex;
+    width: 570px;
+    height: 98px;
+    border-radius: 0.8rem;
+    font-size: 1.2rem;
+  }
+
+  .comment_box {
+    display: flex;
+    flex-flow: column wrap;
+    width: 600px;
+
+  }
+</style>
+
+<body>
+
+  <div class="form_parent">
+
+    <form method="Post">
+      {% csrf_token %}
+
+      <div class="rating">
+
+        <input type="radio" id="star5" name="rating" value="5" />
+        <label class="star" for="star5" title="Awesome" aria-hidden="true"></label>
+        <input type="radio" id="star4" name="rating" value="4" />
+        <label class="star" for="star4" title="Great" aria-hidden="true"></label>
+        <input type="radio" id="star3" name="rating" value="3" />
+        <label class="star" for="star3" title="Very good" aria-hidden="true"></label>
+        <input type="radio" id="star2" name="rating" value="2" />
+        <label class="star" for="star2" title="Good" aria-hidden="true"></label>
+        <input type="radio" id="star1" name="rating" value="1" />
+        <label class="star" for="star1" title="Bad" aria-hidden="true"></label>
+
+      </div>
+      <div class="comment_box">
+        <!-- <textarea name="item_review" placeholder="write a review" rows="6" cols="50" id="review-text"
+          required></textarea> -->
+        <input type="submit" class="post_btn" value="Post">
+
+      </div>
+
+    </form>
+
+
+    {% for x in reviews%}
+    <div class="comment_body">
+      <div class="comment_user">
+        <div style="border-radius:50%; height: 50px; width: 50px;">
+          {% if x.user.selleraccount %}
+          <img src="{{x.user.selleraccount.image.url }}" style="height: 100%; width: 100%; object-fit: cover; border-radius:50%">
+          {% elif x.user.userprofile %}
+          <img src="{{x.user.userprofile.photo.url}}" style="height: 100%; width: 100%; object-fit: cover; border-radius:50%">
+          {% else %}
+          <img src="{% static 'core/images/default_user.png' %}" style="height: 100%; width: 100%; object-fit: cover; border-radius:50%">         
+          {% endif%}
+        </div>
+        <div class="user_rat_info">
+          <h1> @{{x.user}}</h1>
+          <div class="rating_star">
+
+            {% if x.rating > 0 %}
+            <i class="fa fa-star {% if x.rating  < 1 %} no-checked {% else %} checked {% endif %} " id="check-star"></i>
+            <i class="fa fa-star {% if x.rating  < 2 %} no-checked {% else %} checked {% endif %} " id="check-star"></i>
+            <i class="fa fa-star {% if x.rating  < 3 %} no-checked {% else %} checked {% endif %} " id="check-star"></i>
+            <i class="fa fa-star {% if x.rating  < 4 %} no-checked {% else %} checked {% endif %} " id="check-star"></i>
+            <i class="fa fa-star {% if x.rating  < 5 %} no-checked {% else %} checked {% endif %} " id="check-star"></i>
+            <hr>
+            {% else %}
+
+            <i class="fa fa-star " id="star"></i>
+            <i class="fa fa-star" id="star"></i>
+            <i class="fa fa-star" id="star"></i>
+            <i class="fa fa-star" id="star"></i>
+            <i class="fa fa-star" id="star"></i>
+            &nbsp;<span>No ratings</span>
+
+            <hr>
+
+            {% endif %}
+
+          </div>
+
+
+        </div>
+
+      </div>
+      <div class="comment">
+        <span>{{x.review_desp}}</span>
+
+      </div>
+
+
+
+    </div>
+    {%endfor%}
+
+  </div>
+
+
+
+
+</body>
+
+</html>

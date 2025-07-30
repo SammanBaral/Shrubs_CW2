@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {%load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="{% static 'inbox.css'%}">
+    <title>Inbox</title>
+</head>
+
+<header>{% include 'dashboard/navbar.html'%}</header>
+
+<body>
+    <div class="parent">
+        <span class="username">{{request.user.username}}</span>
+
+        <div class="message_holder_parent">
+            <span class="message_header">Messages</span>
+
+            {% for chatting in conversations %}
+            <a href="{% url 'chatting:detail' chatting.id %}" >
+                <div class="message_box" >
+                    <div style="width: 56px; height: 56px; border-radius: 50%;">
+                        <img src="{{ chatting.item.itemimagegallery.images.first.image.url}}" style="border-radius: 50%; object-fit: cover;
+                        height: 100%; width: 100%;">
+                    </div>
+                    <div class="message_info">
+                        {% for member in chatting.members.all %}
+                        {% if member != request.user %}
+                        <p ><strong>{{ member.username }}</strong> | {{ chatting.modified_at }}</p>
+                        <p><span>Product:</span> {{ chatting.item.name }}</p>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+
+                </div>
+            </a>
+            {% endfor %}
+
+        </div>
+
+    </div>
+</body>
+
+<footer>
+    {% include 'dashboard/footer.html'%}
+</footer>
+
+</html>

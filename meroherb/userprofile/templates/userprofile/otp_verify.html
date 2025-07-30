@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Email OTP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Email Verification</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ otp_form.as_p }}
+            <button type="submit" name="otp-verify-form-submit" class="btn btn-primary">Verify OTP</button>
+        </form>
+        {% for msg in messages %}
+            <div class="alert alert-warning mt-3" role="alert">
+                {{ msg }}
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

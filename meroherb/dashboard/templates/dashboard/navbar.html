@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <link href='https://fonts.googleapis.com/css?family=Lobster' rel='stylesheet'>
+   <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,0,0">
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;600;800&family=Lobster&display=swap"
+      rel="stylesheet">
+
+
+   <link rel="stylesheet" href="{% static 'navbar.css'%}" />
+   <script src="{% static 'Profile.js'%}" defer></script>
+
+</head>
+
+<body>
+
+
+   <div class="navbar">
+      <div class="logo">
+         Mero herbs <span style="color:#FF7426">.</span></div>
+      <div class="navbar-links">
+         <a href="{% url 'core:main'%}">
+            Home
+         </a>
+         <a href="{% url 'item:browse' %}" class="Browse">
+            Browse
+         </a>
+      </div>
+
+      <div class="user-wrapper">
+         {% if request.user.is_authenticated %}
+         {% if request.user.selleraccount %}
+         {% if request.user.selleraccount.image %}
+         <img src="{{ request.user.selleraccount.image.url }}" class="user-icon" onclick="toggleMenu()">
+         {% else %}
+         <!-- Handle the case where 'image' attribute has no file associated -->
+         <img src="{% static '/dashboard/images/user.png' %}" class="user-icon" onclick="toggleMenu()">
+         {% endif %}
+         {% else %}
+         <!-- Handle the case where 'selleraccount' doesn't exist -->
+         <img src="{% static '/dashboard/images/user.png' %}" class="user-icon" onclick="toggleMenu()">
+         {% endif %}
+         {% else %}
+         <a href="{% url 'core:login'%}" class="signup">
+            <div class="signup-btn"> Login</div>
+         </a>
+         <a href="{% url 'core:signup'%}" class="signup">
+            <div class="signup-btn"> Sign up</div>
+         </a>
+         {% endif %}
+      </div>
+
+      <div class="sub-menu-wrap" id="subMenu">
+         <div class="sub-menu" style="border-radius: 20px;">
+            <div class="user-info">
+               {% if request.user.is_authenticated %}
+               {% if request.user.selleraccount %}
+               {% if request.user.selleraccount.image %}
+                  <img src="{{ request.user.selleraccount.image.url }}" class="user-icon" style="border-radius: 50%;" onclick="toggleMenu()">
+               {%endif%}
+               {%endif%}
+
+               <h2>{{ request.user.username}}</h2>
+               {%else%}
+               <img src="{% static '/dashboard/images/user.png'%}" alt="check your connection">
+               <h2>Username</h2>
+               {%endif%}
+            </div>
+            <hr>
+            <a href="{%url 'userprofile:userprofile' %}" class="sub-menu-link">
+
+               <img src="{% static '/dashboard/images/edit.png'%} " alt=" ">
+               <p>Edit profile </p>
+               <span>></span>
+            </a>
+
+            <a href="{% url 'item:new' %}" class="sub-menu-link">
+               <img src="{% static '/dashboard/images/addproduct.png'%} " alt=" ">
+               <p>Add product </p>
+               <span>></span>
+            </a>
+
+            {% if request.user.is_superuser%}
+            <a href="{% url 'chatting:inbox' %}" class="sub-menu-link">
+               <img src="{% static '/dashboard/images/addproduct.png'%} " alt=" ">
+               <p>Inbox </p>
+               <span>></span>
+            </a>
+            {% endif %}
+
+            {% if not request.user.selleraccount%}
+            <a href="{% url 'sellerform:sellerform' %}" class="sub-menu-link">
+               <img src="{% static '/dashboard/images/seller.png'%} " alt=" ">
+               <p>Become Seller </p>
+               <span>></span>
+            </a>
+            {% endif %}
+
+            {% comment %} <a href="#" class="sub-menu-link">
+
+               <img src=" {% static '/dashboard/images/support.png'%}" alt=" ">
+               <p>Help and support </p>
+               <span>></span>
+            </a> {% endcomment %}
+
+            {% if request.user.is_authenticated%}
+            <a href="{%url 'dashboard:logout'%}" class="sub-menu-link">
+
+               <img src=" {% static '/dashboard/images/logout.png'%} " alt=" ">
+               <p>Logout </p>
+               <span>></span>
+            </a>
+            {% endif %}
+         </div>
+
+      </div>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'bill.css'%}"/>
+    <title> Item Bill</title>
+</head>
+
+
+<body>
+
+    <div class="root_bill">
+        <div class="sub_bill">
+          <span class="company_name">Mero herbs</span>
+
+            <div class="bill_no" style="margin-bottom: 1.2vmin;">
+                <span style="font-weight: 600; font-size: 1.2rem;">Bill no <span style="text-transform: capitalize; color: blue; "># {{bill.bill_no}} </span> </span>
+
+                {% comment %} <span style="color:#7f868c;">Item name: {{bill.item}} </span> {% endcomment %}
+            </div>
+
+            <hr>
+
+            <div class="bill_body">
+                <div class="upper_body">
+                    <section class="bill_details">
+                        <p>
+                            <span>Bill from:</span>
+                            <span>{{bill.seller}}</span>
+
+                        </p>
+                       
+                        <p>
+                            <span>Bill to:</span>
+                            <span>{{bill.customer}}</span>
+                        </p>
+
+                        <p>
+                            <span>Issued on:</span>
+                            <span>{{bill.issued_date_time}}</span>
+                        </p>
+
+                        <p>
+                            <span>Payment method:</span>
+                            <span>Cash on delivery</span>
+                        </p>
+
+                        <p>
+                            <span>Delivery Location:</span>
+                            <span>{{bill.delivery}}</span>
+                        </p>
+
+                        <p>
+                            <span>Buyer Contact Number:</span>
+                            <span>{{bill.contact_info}}</span>
+                        </p>
+
+                    </section>
+                </div>
+
+                <div class="lower_body">
+                    <span style="font-size: 0.875rem;">Invoice details</span>
+                    <section class="bill_section">
+                        <hr>
+                        <div class="bill_heading" style="color: #7f868c;">
+                            <span> Description</span>
+                            <span>Price</span>
+                            <span>Discount</span>
+                            <span>Qty</span>
+                            <span>Total amount after discount</span>
+                        </div>
+                        <hr>
+
+                        <div class="bill_content">
+                            <span>{{bill.item}}</span>
+                            <span style="color: #008148;">${{bill.total_amount}}</span>
+                            <span>{{bill.discount_per}}%</span>
+                            <span>{{bill.quantity}}</span>
+                            <!-- <span style="color: #008148;">${{bill.discount_price}}</span> -->
+                            {% if bill.discount_price > 0 %}
+                                <!-- <del>${{ item.price }}</del> -->
+                                <span style="color: #008148;">${{bill.discount_price}} </span>
+                            {% else %}
+                                <span style="color: #008148;">${{bill.total_amount}} </span>
+                            {% endif %}
+                        </div>
+
+                        <hr>
+                        {% comment %} <div class="total_amt">
+                            <span>Grand total</span>
+                            <span style="color: #008148;"> Rs 28282828</span>
+                        </div> {% endcomment %}
+                    </section>
+
+
+                </div>
+            </div>
+
+            <div class="button_section">
+
+            </div>
+
+        </div>
+        <form id="generatePdfForm" method="post" action="{% url 'item:generate_pdf' bill.bill_no %}">
+          {% csrf_token %}
+          <input type="hidden" name="customer_name" value="{{ bill.customer }}">
+          <input type="hidden" name="item_name" value="{{ bill.item }}">
+          <input type="hidden" name="quantity" value="{{ bill.quantity }}">
+          <input type="hidden" name="total_amount" value="{{ bill.total_amount }}">
+          <button type="submit" id="generatePdfBtn">Generate PDF</button>
+        </form>
+       
+
+    </div>
+    
+
+   
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
+</html>
+
+
+{% comment %} <script>
+    document.getElementById('generatePdfBtn').addEventListener('click', function () {
+        // Submit the form using JavaScript
+        document.getElementById('generatePdfForm').submit();
+    });
+</script> {% endcomment %}

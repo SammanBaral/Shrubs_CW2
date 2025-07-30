@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet">
+
+
+  <title>Hello, world!</title>
+</head>
+
+<body>
+
+
+  <div class="container">
+    <h1 style="color: #008148; font-size: 2.5rem;">Mero herbs</h1>
+    <div class="sub_bill">
+      <div class="bill_no" style="margin-bottom: 1.2vmin;">
+        <span style="font-weight: 600; font-size: 2rem;">Bill no <span
+            style="text-transform: capitalize; color: blue;  "># {{bill.bill_no}} </span> </span>
+
+        {% comment %} <span style="color:#7f868c; font-size: 1.5rem;">Item name </span> {% endcomment %}
+      </div>
+
+      <hr>
+
+      <table class="table table-bordered table-dark" style="font-weight:400; font-family: sans-serif; font-size: 1.3rem;">
+        <thead>
+          <tr>
+            <th scope="col" >Bill From: </th>
+            <th scope="col" >Bill to:</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="margin-left: 150px;">{{bill.seller}}</td>
+            <td style="margin-left: 160px;">{{bill.customer}}</td>
+          </tr>
+    
+        </tbody>
+      </table>
+
+      <table class="table table-bordered table-dark" style="font-weight:400; font-family: sans-serif; font-size: 1.3rem; margin-top: 20px;">
+        <thead>
+          <tr>
+            <th scope="col">Issued On:</th>
+            <th scope="col">Payment Method:</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="margin-left: 147px;">{{bill.issued_date_time}}</td>
+            <td style="margin-left: 127px;">Cash on delivery</td>
+          </tr>
+    
+        </tbody>
+        <table class="table table-bordered table-dark" style="font-weight:400; font-family: sans-serif; font-size: 1.3rem; margin-top: 40px;">
+          <thead>
+            <tr>
+              <th scope="col" style= 'padding-left:24px;'>Delivery Location:</th>
+              <th scope="col">Buyer Contact Info:</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="margin-left: 150px;">{{bill.delivery}}</td>
+              <td style="margin-left: 147px;">{{bill.contact_info}}</td>
+            </tr>
+      
+          </tbody>
+      </table>
+
+    
+      
+      <table class="table table-bordered" >
+        <thead>
+          <tr style="font-size: 1.5rem ; color: #7f868c; padding-bottom: 10px;">
+            <hr>
+            <th scope="col">Description</th>
+            <th scope="col">Price</th>
+            <th scope="col">Discount</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Total after Discount</th>
+          </tr>
+        </thead>
+        <tbody >
+          <tr style="font-size: 1.43rem; padding-bottom: 10px;">
+            <th scope="row">{{bill.item}}</th>
+            <td style="margin-left: 60px; color: #008148;">${{bill.total_amount}}</td>
+            <td style="margin-left: 50px;">{{bill.discount_per}}%</td>
+            <td style="margin-left: 55px;">{{bill.quantity}}</td>
+            {% if bill.discount_price > 0 %}
+              <td style="margin-left: 50px;  color: #008148;">${{bill.discount_price}}</td>
+            {% else %}
+              <td style="margin-left: 50px;  color: #008148;">${{bill.total_amount}}</td>
+            {% endif %}
+          </tr>
+
+          {% comment %} <tr style="font-size: 1.46rem;">
+            <td colspan="2" style="margin-left: 65px;">Grand total</td>
+            <td style="margin-left: 255px; color: #008148;">28282828</td>
+          </tr> {% endcomment %}
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"></script>
+</body>
+
+</html>

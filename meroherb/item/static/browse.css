@@ -1,0 +1,385 @@
+@import url('https://fonts.googleapis.com/css?family=Josefin+Sans&display=swap');
+
+/* Google Fonts - Poppins */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+
+@import url("https://fonts.googleapis.com/css?family=Fira+Sans:400,500,600,700,800");
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  list-style: none;
+  text-decoration: none;
+  font-family: 'Josefin Sans', sans-serif;
+  font-family: "Poppins", sans-serif;
+}
+
+body{
+  background-color: #f3f5f9;
+  display: flex;
+  flex-flow: column wrap;
+  gap: 2vh;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.maincontent{
+  display: flex;
+  flex-flow: column wrap;
+  margin-top: 10px;
+}
+.maincontent{
+  width: 100vw;
+  display: flex;
+  justify-content: space-between;
+}
+
+ 
+.maincontent .filtercat ul{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.maincontent .filtercat  ul li{
+  display: flex;
+  align-items: center;
+  list-style: none;
+  padding: 15px;
+  justify-content: center;
+  border-bottom: 1px solid #bdb8d7;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}    
+
+.maincontent .filtercat  ul li a{
+  color: black;
+  display: block;
+}
+
+.maincontent .filtercat  ul li a .fas{
+  width: 25px;
+}
+
+.maincontent .filtercat ul li:hover{
+  background-color: #594f8d;
+  border-radius: 10px;
+}
+    
+.maincontent .filtercat ul li:hover a{
+  color: #fff;
+}
+ 
+.maincontent{
+  width: 100%;
+  display: flex;
+  flex-flow:column wrap;
+  gap: 3vh;
+  align-items: center
+}
+
+
+
+.searchbar{
+  width: 100%;
+  justify-content: center;
+  align-items: center ;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+
+
+.input-box {
+  position: relative;
+  height: 76px;
+  width: 900px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  margin-top: 3vh;
+}
+.input-box i,
+.btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.input-box i {
+  left: 20px;
+  font-size: 30px;
+  color: #707070;
+}
+.input-box input {
+  height: 100%;
+  width: 100%;
+  outline: none;
+  font-size: 18px;
+  font-weight: 400;
+  border: none;
+  padding: 0 155px 0 65px;
+  background-color: transparent;
+}
+.btn {
+  right: 20px;
+  font-size: 16px;
+  font-weight: 400;
+  color: #fff;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 6px;
+  background-color: #4070f4;
+  cursor: pointer;
+  align-items: center;
+}
+.input-box .button:active {
+  transform: translateY(-50%) scale(0.98);
+}
+
+/* Responsive */
+@media screen and (max-width: 500px) {
+  .input-box {
+    height: 66px;
+    margin: 0 8px;
+  }
+  .input-box i {
+    left: 12px;
+    font-size: 25px;
+  }
+  .input-box input {
+    padding: 0 112px 0 50px;
+  }
+  .input-box .button {
+    right: 12px;
+    font-size: 14px;
+    padding: 8px 18px;
+  }
+}
+
+
+
+
+
+/* CARD CSS
+--------- */
+
+.showcase-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: hsl(152, 51%, 52%);
+  font-size: 0.813rem;
+  font-weight: 500;
+  color: hsl(0, 100%, 100%);
+  padding: 0 8px;
+  border-radius: 5px;
+  z-index: 3
+}
+
+.container-card {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.card {
+  background-color: white;
+  width: 360px;
+  margin: 10px;
+  border-radius: 15px;
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-image {
+  height: 150px;
+  margin-bottom: 15px;
+  background-size: cover;
+  border-radius: 15px 15px 0 0;
+}
+
+.card h2 {
+  padding: 10px;
+  gap: 10px;
+  color: #333; /* Adjust text color */
+}
+
+.card p { 
+  padding: 5px;
+  color: #555; /* Adjust text color */
+  text-align: left;
+}
+
+.rating_showcase {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  gap: .3rem;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+
+.checked {
+  color: #ffcc00; /* Adjust checked star color */
+  font-size: 16px;
+}
+
+
+
+
+/* <----slider----> */
+/* Import Google Font - Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+
+
+::selection {
+  color: #fff;
+  background: #17A2B8;
+}
+
+.dropdown {
+  position: relative;
+  margin-top: 10px;
+
+}
+
+.dropbtn {
+  background-color: #4CAF50;
+  color:black;
+  padding: 16px;
+  font-size: 16px;
+  border-radius: 10px;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  padding: 20px;
+  width: 300px;
+  border-radius: 20px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+  
+}
+
+.dropdown-content .serchbtn button{
+  font-size: 16px;
+  font-weight: 400;
+  color: #fff;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 6px;
+  background-color: #4070f4;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.price-input {
+  width: 100%;
+  display: flex;
+  margin: 30px 0 35px;
+}
+
+.price-input .field {
+  display: flex;
+  width: 100%;
+  height: 45px;
+  align-items: center;
+}
+
+.field input {
+  width: 100%;
+  height: 100%;
+  outline: none;
+  font-size: 19px;
+  margin-left: 12px;
+  border-radius: 5px;
+  text-align: center;
+  border: 1px solid #999;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.price-input .separator {
+  width: 130px;
+  display: flex;
+  font-size: 19px;
+  align-items: center;
+  justify-content: center;
+}
+
+.slider {
+  height: 5px;
+  position: relative;
+  background: #ddd;
+  border-radius: 5px;
+}
+
+.slider .progress {
+  height: 100%;
+  left: 25%;
+  right: 25%;
+  position: absolute;
+  border-radius: 5px;
+  background: #17A2B8;
+}
+
+.range-input {
+  position: relative;
+}
+
+.range-input input {
+  position: absolute;
+  width: 100%;
+  height: 5px;
+  top: -5px;
+  background: none;
+  pointer-events: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  height: 17px;
+  width: 17px;
+  border-radius: 50%;
+  background: #17A2B8;
+  pointer-events: auto;
+  -webkit-appearance: none;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 17px;
+  width: 17px;
+  border: none;
+  border-radius: 50%;
+  background: #17A2B8;
+  pointer-events: auto;
+  -moz-appearance: none;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+}
+
+

@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+*{
+  margin: 0;
+
+}
+.parent {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: end;
+    width: 100%;
+    gap: 8vmax;
+    height: 100vh;
+    background-size: cover;
+    /* position: relative; */
+    background-image: url('./core/images/loginbg.jpg');
+  }
+  
+  .parent .text-wrapper {
+    position: absolute;
+    top: 30px;
+    left: 55px;
+    font-family: "Poppins-SemiBold", Helvetica;
+    font-weight: 600;
+    color: #000000;
+    font-size: 20px;
+    letter-spacing: 0;
+    line-height: normal;
+
+    display: flex ;
+    font-weight: 600;
+    font-family: Lobster, sans-serif;
+    font-size: 24px;
+    color: black;
+    width: 60px;
+  }
+
+  .field-error{
+    color: rgb(176, 33, 33);
+    font-size: 1rem;
+    font-family: Poppins,sans-serif;
+    width: 5vw;
+    align-self: center;
+    width: 20vmax;
+    font-weight: 600;
+  }
+  
+  .group {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    justify-items: end;
+    height: 70vh;
+    margin-right: 10vmax;
+    border-radius: 10px;
+    border: 1px solid;
+    gap: 1vh;
+    background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3));
+    box-shadow: 7px 7px 60px #000;
+  }
+  .card_upper{
+    display: flex;
+    flex-wrap: row wrap;
+    height: 10vw;
+    flex-direction: column;
+    /* gap: -5vh; */
+
+  }
+  .welcome{
+    display: flex;
+    align-items: center;
+    height: 3vw;
+    width: 17vw;
+    color: #F4F2F2;
+    font-family: Poppins,sans-serif;
+    justify-self: center;
+    font-size: 21px;
+    gap: 2vh;
+    align-self: center;
+  }
+  .welcome .card_upper_meroherb{
+    color: #50D94D;
+  }
+  .signin{
+    display: flex;
+    color: #F4F2F2;
+    font-weight: 600;
+    font-size: 30px;
+    font-family: Poppins,sans-serif;
+    align-self: center;
+  }
+  .userfield{
+    display: flex;
+    flex-direction: column;
+    width: 30vw;
+    height: 50vh;
+    align-items: center;
+    align-self: center;
+    gap: 2rem;
+  }
+  .userfield span {
+    color: #F4F2F2;
+    font-family: Poppins,sans-serif;
+    font-size: 0.8rem;
+  }
+  .userfield span a{
+    text-decoration: none;
+    color: #F4F2F2;
+  }
+  .fields{
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .username{
+    display: flex;
+    flex-direction: column;
+    height: 6.7vh;
+    width: 30vw;
+    justify-content: center;
+  }
+  .usernamebox{
+    height: 3vw;
+    width: 22vw;
+    align-self: center;
+    border-radius: 0.6rem;
+    border: none;
+    background-color: #F4F2F2;
+    font-family: Poppins,sans-serif;
+    font-size: 0.8rem;
+
+
+  }
+  .password{
+    display: flex;
+    flex-direction: column;
+    height: 12vw;
+    margin-top: 2vw;
+    justify-content: center;
+    gap: 2vw;
+  }
+  .password a{
+    text-decoration: none;
+    color: #F4F2F2;
+    flex-wrap: wrap;
+    font-family: Poppins,sans-serif;
+    font-size: 0.8rem;
+    align-self: flex-end;
+    margin-right: 3rem;
+  }
+  .passwordbox{
+    height: 3vw;
+    width: 22vw;
+    align-self: center;
+    border-radius: 0.6rem;
+    border: none;
+    font-family: Poppins,sans-serif;
+    font-size: 0.8rem;
+    background-color: #F4F2F2;
+
+  }
+  .signin-btn{
+    width: 10vw;
+    align-self: center;
+    border-radius: 0.4rem;
+    height: 4.2vw;
+    border: none;
+    background-color: black;
+    color: white;
+    font-family: Poppins,sans-serif;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  
+
+  
+ 
+  
+  
+ 
+
+  

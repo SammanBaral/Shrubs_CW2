@@ -1,0 +1,636 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <title>Mero herbs</title>
+
+  <!--
+    - favicon
+  -->
+  <link rel="shortcut icon" href="./assets/images/logo/favicon.ico" type="image/x-icon">
+
+  <!--
+    - custom css link
+  -->
+  <link rel="stylesheet" href="{% static 'main.css' %}">
+
+  <!--
+    - google font link
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+</head>
+
+<body>
+
+  <header>
+
+    {% include 'dashboard/navbar.html'%}
+
+    <div class="mobile-bottom-navigation">
+
+      <button class="action-btn" data-mobile-menu-open-btn>
+        <ion-icon name="menu-outline"></ion-icon>
+      </button>
+
+      <button class="action-btn">
+        <ion-icon name="bag-handle-outline"></ion-icon>
+
+        <span class="count">0</span>
+      </button>
+
+      <button class="action-btn">
+        <ion-icon name="home-outline"></ion-icon>
+      </button>
+
+      <button class="action-btn">
+        <ion-icon name="heart-outline"></ion-icon>
+
+        <span class="count">0</span>
+      </button>
+
+      <button class="action-btn" data-mobile-menu-open-btn>
+        <ion-icon name="grid-outline"></ion-icon>
+      </button>
+
+    </div>
+  </header>
+
+
+
+
+
+  <!--
+    - MAIN
+  -->
+
+  <main>
+
+    <!--
+      - BANNER
+    -->
+
+    <div class="banner">
+
+      <div class="container">
+
+        <div class="slider-container has-scrollbar">
+
+          <div class="slider-item">
+
+            <img src="{% static './core/images/vibrantherb.png'%}" alt="" class="banner-img" />
+
+            <div class="banner-content">
+
+              <p class="banner-subtitle" style="color: white;">Welcome to</p>
+
+              <h2 class="banner-title" style="color: whitesmoke;">Nature's garden</h2>
+
+              <p class="banner-text" style="color: white; font-size: 0.9rem;">
+                Discover the Power of Organic Herbs for a Healthier, Happier You
+              </p>
+
+              <a href="{% url 'item:browse' %}" class="banner-btn">Shop now</a>
+
+            </div>
+
+          </div>
+
+          <div class="slider-item">
+
+            <img src="{% static './core/images/family.jpg'%}" alt="" class="banner-img" />
+
+            <div class="banner-content">
+
+              <p class="banner-subtitle" style="color: whitesmoke;">Purity in</p>
+
+              <h2 class="banner-title" style="color:whitesmoke;">Every leaf</h2>
+
+              <p class="banner-text" style="font-size: 0.9rem; color: whitesmoke;">
+                Sustainability is the only business we know. We put people, plants, and planet before profit with everything we do.
+              </p>
+
+              <a href="{% url 'item:browse' %}" class="banner-btn">Shop now</a>
+
+            </div>
+
+          </div>
+
+          <div class="slider-item">
+
+            <img src="https://blog.mountainroseherbs.com/hubfs/Blog%20images/Herbs%20for%20Skincare%20Banner.jpg#keepProtocol" alt="" class="banner-img" />
+
+            <div class="banner-content">
+
+              <p class="banner-subtitle" style="color: white;">Bringing Nature to Your Doorstep</p>
+
+
+              <p class="banner-text" style="font-size: 0.9rem; color: white;">
+                Certified Organic Herbs - From Farm to Your Table.
+              </p>
+
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!--
+      - PRODUCT
+    -->
+
+    <div class="product-container">
+
+      <div class="container">
+
+        <!--
+          - SIDEBAR   OF CATEGORY 
+        -->
+
+        <div class="sidebar  has-scrollbar" data-mobile-menu>
+
+          <div class="sidebar-category">
+
+            <div class="sidebar-top">
+              <h2 class="sidebar-title">Category</h2>
+
+              <button class="sidebar-close-btn" data-mobile-menu-close-btn>
+                <ion-icon name="close-outline"></ion-icon>
+              </button>
+            </div>
+
+            <ul class="sidebar-menu-category-list">
+
+              {% for category in categories%}
+              <a href="{% url 'item:category_view' category.name %}">
+                <li class="sidebar-menu-category">
+
+                  <button class="sidebar-accordion-menu" data-accordion-btn>
+
+                    <div class="menu-title-flex">
+                      <!-- <img src="./assets/images/icons/dress.svg" alt="clothes" width="20" height="20"
+                      class="menu-title-img"> -->
+
+                      <p class="menu-title">{{category.name}}</p>
+                    </div>
+
+                    <div>
+                      <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                      <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+                    </div>
+
+                  </button>
+                </li>
+              </a>
+              {% endfor %}
+
+
+            </ul>
+
+          </div>
+
+          <div class="product-showcase">
+
+            <h3 class="showcase-heading">best sellers</h3>
+
+            <div class="showcase-wrapper">
+
+              <div class="showcase-container">
+
+                {% for product_data in best_selling_with_images %}
+
+                <div class="showcase">
+
+                  <a href="{% url 'item:detail' product_data.product.id  %}" class="showcase-img-box">
+                    <img src="{{ product_data.image_url }}"  width="141" height="75" class="showcase-img">
+                  </a>
+
+                  <div class="showcase-content">
+
+                    <a href="{% url 'item:detail' product_data.product.id  %}">
+                      <h4 class="showcase-title">{{product_data.product.name}}</h4>
+                    </a>
+
+                    <div class="showcase-rating">
+                      {% if product_data.product.average_rating %}
+                      {{product_data.product.average_rating|floatformat:2}}
+                      {% for i in "12345" %}
+                      {% if i|add:"0" <= product_data.product.average_rating %} <i class="fa fa-star checked" id="check-star"></i>
+                        {% else %}
+                        <i class="fa fa-star" id="check-star"></i>
+                        {% endif %}
+                        {% endfor %}
+                        {% else %}
+                        <!-- If there are no ratings -->
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="price-box">
+                      {% if product_data.product.discounted_price %}
+                      <p class="price" style="color: #008148;">${{ product_data.product.discounted_price|floatformat:2 }}</p>
+                      {% if product_data.product.discount > 0 %}
+                          <del>${{ product_data.product.price }}</del>
+                      {% endif %}
+                      {% else %}
+                      <p class="price" style="color: #008148;">${{ product_data.product.price }}</p>
+                      {% endif %}
+                    </div>
+
+                  </div>
+
+                </div>
+
+                {%endfor%}
+
+
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!------------------------------------------------ PRODUCT MINIMAL--------------------------------------------------------------------->
+
+        <div class="product-box">
+
+          <!-------------------------------------------New arrival product-------------------------------------------------------------->
+          <div class="product-minimal">
+
+            <div class="product-showcase">
+
+              <h2 class="title">New Arrivals</h2>
+
+              <div class="showcase-wrapper has-scrollbar">
+
+                <div class="showcase-container">
+
+                  {% for product_data in new_products_with_images %}
+                  <div class="showcase">
+
+                    <a href="{% url 'item:detail' product_data.product.id  %}" class="showcase-img-box">
+                      <img src="{{product_data.image_url}}" width="141" height="75" class="showcase-img">
+                    </a>
+
+                    <div class="showcase-content">
+
+                      <a href="{% url 'item:detail' product_data.product.id  %}">
+                        <h4 class="showcase-title">{{product_data.product.name}}</h4>
+                      </a>
+
+                      <span class="showcase-category">{{product_data.product.category}}</span>
+
+                      <div class="price-box">
+                        <p class="price">
+                          {% if product_data.product.discounted_price %}
+                          <p class="price" style="color: #008148;">${{ product_data.product.discounted_price|floatformat:2 }}</p>
+                          {% if product_data.product.discount > 0 %}
+                              <del>${{ product_data.product.price }}</del>
+                          {% endif %}
+                          {% else %}
+                          <p class="price" style="color: #008148;">${{ product_data.product.price }}</p>
+                          {% endif %}                       
+                        
+                        </p>
+                      </div>
+
+                    </div>
+
+                  </div>
+                  {%endfor%}
+
+                </div>
+
+
+
+              </div>
+
+            </div>
+
+
+            <!---------------------------------------------- Trending content part      ------------------------------------------------------------------------------------------>
+
+            <div class="product-showcase">
+
+              <h2 class="title">Trending</h2>
+
+              <div class="showcase-wrapper  has-scrollbar">
+
+                <div class="showcase-container">
+
+                  {% for product_data in trending_products_with_images %}
+                  <div class="showcase">
+
+                    <a href="{% url 'item:detail' product_data.product.id  %}" class="showcase-img-box">
+                      <img src="{{product_data.image_url}}" class="showcase-img" width="141" height="75">
+                    </a>
+
+                    <div class="showcase-content">
+
+                      <a href="{% url 'item:detail' product_data.product.id  %}">
+                        <h4 class="showcase-title">{{product_data.product.name}}</h4>
+                      </a>
+
+                      <span class="showcase-category">{{product_data.product.category}}</span>
+
+                      <div class="price-box">
+                        <p class="price">
+
+                      {% if product_data.product.discounted_price %}
+                      <p class="price" style="color: #008148;">${{ product_data.product.discounted_price|floatformat:2 }}</p>
+                      {% if product_data.product.discount > 0 %}
+                          <del>${{ product_data.product.price }}</del>
+                      {% endif %}
+                      {% else %}
+                      <p class="price" style="color: #008148;">${{ product_data.product.price }}</p>
+                      {% endif %}                        
+                        </p>
+                      </div>
+
+                    </div>
+
+                  </div>
+                  {%endfor%}
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!---------------------------------------------------------------Top rated product--------------------------------------------------------------------------->
+
+            <div class="product-showcase">
+
+              <h2 class="title">Top Rated</h2>
+
+              <div class="showcase-wrapper  has-scrollbar">
+
+                <div class="showcase-container">
+
+                  {% for product_data in top_rated_with_images %}
+
+                  <div class="showcase">
+
+                    <a href="{% url 'item:detail' product_data.product.id  %}" class="showcase-img-box">
+                      <img src="{{product_data.image_url}}" class="showcase-img" width="141" height="75">
+                    </a>
+
+                    <div class="showcase-content">
+
+                      <a href="{% url 'item:detail' product_data.product.id  %}">
+                        <h4 class="showcase-title">{{product_data.product.name}}</h4>
+                      </a>
+
+                      <span class="showcase-category">{{product_data.product.category}}</span>
+
+                      <div class="price-box">
+                        <p class="price">
+                          {% if product_data.product.discounted_price %}
+                          <p class="price" style="color: #008148;">${{ product_data.product.discounted_price|floatformat:2 }}</p>
+                          {% if product_data.product.discount > 0 %}
+                              <del>${{ product_data.product.price }}</del>
+                          {% endif %}
+                          {% else %}
+                          <p class="price" style="color: #008148;">${{ product_data.product.price }}</p>
+                          {% endif %}
+                        
+                        
+                        </p>
+                      </div>
+
+                    </div>
+
+                  </div>
+                  {%endfor%}
+
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+
+
+
+          <!--
+            - PRODUCT FEATURED
+          -->
+
+          <div class="product-featured">
+
+            <h2 class="title">Deal of the day</h2>
+
+
+            <div class="showcase-wrapper has-scrollbar">
+              {% for product_data in deal_day_with_images %}
+
+              <div class="showcase-container">
+
+                <div class="showcase">
+
+                  <div class="showcase-banner">
+                    <img src="{{product_data.image_url}}" 
+                      class="showcase-img">
+                  </div>
+
+                  <div class="showcase-content">
+
+                    <div class="showcase-rating">
+                      {% if product_data.product.average_rating %}
+                      <span>{{product_data.product.average_rating|floatformat:2}}</span>
+                      {% for i in "12345" %}
+                      {% if i|add:"0" <= product_data.product.average_rating %} <i class="fa fa-star checked" id="check-star"></i>
+                        {% else %}
+                        <i class="fa fa-star" id="check-star"></i>
+                        {% endif %}
+                        {% endfor %}
+                        {% else %}
+                        <!-- If there are no ratings -->
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        {% endif %}
+                    </div>
+
+                    <a href="#">
+                      <h3 class="showcase-title">{{product_data.product.name}}</h3>
+                    </a>
+
+                    <p class="showcase-desc">
+                      {{product_data.product.description}} <br>
+                      {{product_data.product.usage_and_benefits}}
+               
+                    </p>
+
+                    <div class="price-box">
+                      <p class="price">
+                        {% if product_data.product.discounted_price %}
+                      <p class="price" style="color: #008148;">${{ product_data.product.discounted_price|floatformat:2 }}</p>
+                      {% if product_data.product.discount > 0 %}
+                          <del>${{ product_data.product.price }}</del>
+                      {% endif %}
+                      {% else %}
+                      <p class="price" style="color: #008148;">${{ product_data.product.price }}</p>
+                      {% endif %}
+                      </p>
+
+                    </div>
+
+                  
+              
+
+              
+
+                  </div>
+
+                </div>
+
+              </div>
+              {%endfor%}
+
+
+
+
+            </div>
+
+          </div>
+
+
+
+          <!---------------------------------------------------------- PRODUCT GRID------------------------------------------------------------------------------------->
+
+          <div class="product-main">
+
+            <h2 class="title">New Products</h2>
+
+            <div class="product-grid">
+
+              {% for product_data in new_products_with_images %}
+
+                <div class="showcase">
+                  <a href="{% url 'item:detail' product_data.product.id  %}" style="height: 152px;">
+
+                  <div class="showcase-banner" style="height: 100%;">
+
+                    <img src="{{product_data.image_url}}" alt="Mens Winter Leathers Jackets" width="300"
+                      class="product-img default">
+                    <img
+                      src="https://static.toiimg.com/thumb/85864562.cms?width=400&height=300&resizemode=4&imgsize=179002"
+                   width="300" class="product-img hover">
+                    {% if product_data.product.discount > 1.00%}
+                    <p class="showcase-badge">{{product_data.product.discount}}%</p>
+                    {%else%}
+
+                    {%endif%}
+
+                  </div>
+                  </a>
+
+                  <div class="showcase-content">
+
+                    <span class="showcase-category">{{product_data.product.category}}</span>
+
+                    <a href="{% url 'item:detail' product_data.product.id  %}">
+                      <h3 class="showcase-title">{{product_data.product.name}}</h3>
+                    </a>
+
+                    <a href="{%url 'dashboard:sellerprofile' product_data.product.created_by.id %}">
+                      <h3 class="showcase-title" style="color:#050505;font-size: 12px">
+                        @{{product_data.product.created_by}}
+                      </h3>
+                    </a>
+
+                    <div class="showcase-rating">
+                      {% if product_data.product.average_rating %}
+                      <span>{{product_data.product.average_rating| floatformat:2}}</span>
+                      {% for i in "12345" %}
+                      {% if i|add:"0" <= product_data.product.average_rating %} <i class="fa fa-star checked" id="check-star"></i>
+                        {% else %}
+                        <i class="fa fa-star" id="check-star"></i>
+                        {% endif %}
+                        {% endfor %}
+                        {% else %}
+                        <!-- If there are no ratings -->
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        <i class="fa fa-star" id="star"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="price-box">
+                      {% if product_data.product.discounted_price %}
+                          <p class="price">${{ product_data.product.discounted_price|floatformat:2 }}</p>
+                          {% if product_data.product.discount > 0 %}
+                              <del>${{ product_data.product.price }}</del>
+                          {% endif %}
+                      {% else %}
+                          <p class="price">${{ product_data.product.price }}</p>
+                      {% endif %}
+                    </div>
+                  
+
+                  </div>
+
+                </div>
+                {%endfor%}
+
+            </div>
+
+          </div>
+
+
+
+        </div>
+      </div>
+
+  </main>
+
+  {% include 'dashboard/footer.html'%}
+
+
+
+  <!--
+    - custom js link
+  -->
+
+  <!--
+    - ionicon link
+  -->
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+</body>
+
+</html>

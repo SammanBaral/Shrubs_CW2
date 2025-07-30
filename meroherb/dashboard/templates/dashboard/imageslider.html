@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,0,0"
+    />
+    <link rel="stylesheet" href="{% static 'imageslider.css'%}" />
+    <script src="{% static "imageslider.js" %}" ></script>
+  </head>
+  <body>
+
+    <div class="container">
+      <div class="slider-wrapper">
+        <span class="category-text">Categories</span>
+        <span class="category-btn"><a href="{% url 'item:browse'%}">View all categories</a> </span>
+        <button id="prev-slide" class="slide-button material-symbols-rounded">
+          chevron_left
+        </button>
+        <ul class="image-list">
+          <a href="{% url 'item:category_view' 'culinary' %}">
+          <img class="image-item" src="{% static '/dashboard/images/culinary.png'%}" alt="img-1" />
+          </a>
+
+          <a href="{% url 'item:category_view' 'essential oils' %}">
+          <img class="image-item" src="{% static '/dashboard/images/Group 13951.png'%}" alt="img-1" />
+        </a>
+
+
+          <a href="{% url 'item:category_view' 'herbs spices' %}">
+          <img class="image-item" src="{% static '/dashboard/images/herbs.png'%}" alt="img-1" />
+        </a>
+
+
+          <a href="{% url 'item:category_view' 'containers' %}">
+          <img class="image-item" src="{% static '/dashboard/images/Group 13952.png'%}" alt="img-1" />
+        </a>
+
+
+          <a href="{% url 'item:category_view' 'aromatherapy' %}">
+          <img class="image-item" src="{% static '/dashboard/images/Group 13947.png'%}" alt="img-1" />
+        </a>
+
+          <a href="{% url 'item:category_view' 'teas' %}">
+          <img class="image-item" src="{% static '/dashboard/images/tea.png'%}" alt="img-1" />
+        </a>
+
+
+          <a href="{% url 'item:category_view' 'health' %}">
+          <img class="image-item" src="{% static '/dashboard/images/Group 13948.png'%}" alt="img-1" />
+          </a>
+        </ul>
+        <button id="next-slide" class="slide-button material-symbols-rounded">
+          chevron_right
+        </button>
+      </div>
+      <div class="slider-scrollbar">
+        <div class="scrollbar-track">
+          <div class="scrollbar-thumb"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

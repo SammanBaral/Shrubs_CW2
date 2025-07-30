@@ -1,0 +1,163 @@
+header{
+    width: 100vw;
+}
+.navbar{
+    width: 100%;
+    height: 90px;
+    display: flex ;
+    flex-flow: row wrap;
+    z-index: 100;
+    background-color: #008148;
+    opacity: 89%;   
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap:2vmax;
+    text-decoration: none;
+    color: black;
+}
+.navbar-links a{
+    text-decoration: none;
+    color: black;
+    font-family: Inter, sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+}
+.navbar .logo{
+    display: flex ;
+    font-weight: 600;
+    font-family: Lobster, sans-serif;
+    font-size: 24px;
+    color: black;
+    margin-left: 65px;
+    width: 60px;
+    align-items: center;
+    justify-content: left;
+   
+}
+
+ .menu{
+    width: 10px;
+    padding: 0;
+    margin-left: 50px;
+    list-style: none;
+    display: inline-block;
+    justify-content: left;
+    font-weight: 500;
+}
+
+::placeholder{
+    text-align: center;
+    color: black;
+}
+.user-wrapper{
+    display: flex;
+   
+
+}
+.user-wrapper img{
+    object-fit: contain;
+    height: 42px;
+    width: 42px;
+    margin-right: 40px;
+    cursor: pointer;
+    border-radius:50%;
+}
+
+.user-info img{
+    height: 42px;
+    width: 42px;
+    margin: 15px;
+}
+.sub-menu-wrap{
+    position:absolute;
+    top: 100%;
+    right: 2%;
+    width: 310px;
+    border-radius: 10px;
+    overflow: hidden;
+    max-height: 0px;
+    transition: max-height 0.5s;
+
+}
+/* gets toggled by javascript  */
+ .sub-menu-wrap.open-menu{   
+    max-height: 400px;
+}
+.sub-menu{
+    background: #fff;
+    padding: 20px;
+    margin: 10px;
+}
+.sub-menu hr{
+    border: 0;
+    height: 1px;
+    width: 100%;
+    background: #ccc;
+    margin: 15px 0 10px ;
+}
+.user-info{
+    align-items: center;
+    display: flex;
+}
+.user-info img{
+    border-radius: 50%;
+}
+.sub-menu-link{
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #525252;
+    margin: 12px 0;
+}
+.sub-menu-link p{
+    width: 100%;
+}
+.sub-menu-link img{
+    width: 40px;
+    background:#e5e5e5;
+    border-radius: 34%;
+    padding: 8px;
+    margin-right: 15px;
+    object-fit: cover;
+
+}
+.sub-menu-link span{
+    font-size: 18px;
+    transition: transform 0.5s;
+}
+.sub-menu-link:hover span{
+    transform: translateX(5px);
+}
+.sub-menu-link:hover p{
+    font-weight: 600;
+}
+.signup-btn{
+    width: 100px;
+    display: flex;
+    background-color: transparent;
+    border-radius: 0.25rem;
+    border: 0.125rem solid #0d333f;
+    color: #0d333f;
+    min-height: unset;
+    height: 3.25rem;
+    padding: 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'AvenirNext forINTUIT', Helvetica, sans-serif;
+    cursor: pointer;
+    margin-right: 30px;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    transition: all 0.5s cubic-bezier(0.35, 0, 0.25, 1);
+    
+
+}
+.signup{
+    text-decoration: none;
+} 

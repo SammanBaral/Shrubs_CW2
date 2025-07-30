@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'sellerform.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;600;800&family=Lobster&display=swap">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+
+</head>
+<header>
+    {% include 'dashboard/navbar.html'%}
+</header>
+
+<body>
+    {% for msg in messages%}
+    <div class="alert alert-warning" role="alert">
+        {{msg}}
+      </div>
+      {%endfor%}
+    <main>
+        <div class="parent_wrapper">
+            <div class="main_text">
+                <span class="parent-wrapper_text">Sell on Mero herb's <br> Marketplace</span>
+                <span class="parent-wrapper_subtext">Create your seller account in one click and connect with thousands of customers</span>
+
+            </div>
+            <div class="parent_div">
+                <div class="form_parent">
+                    <div class="form_body">
+                        <div class="upper_form_text">
+                            <span class="create_text">Create seller account </span>
+                            <span class="user_greetings">Hi! <span style="color: #008148;">{{request.user.first_name}}
+                                    {{request.user.last_name}}</span>, Welcome to our seller program</span>
+
+                        </div>
+
+                        <!-- {% if error %}
+                        <p>Error: {{ error }}</p>
+                    {% endif %} -->
+
+                        <form method="post" action="{% url 'sellerform:sellerform'%}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input class="username_input" type="text" id="username" name="username"
+                                placeholder="Username">
+
+                            <!-- Add the input for profile picture -->
+                            <label for="profile_picture">Profile Picture:</label>
+                            {{form.image}}
+
+                            <input class="request_btn" type="submit" value="Submit">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="bottom_content_parent">
+            <div class="why_sell-text">
+                Why sell on Meroherbs
+            </div>
+            <div class="content_grid">
+                <div class="why_content">
+                    <span class="content_title">
+                        <img src="{% static '/sellerform/images/marketing.png'%}">
+                        Marketing Support
+
+                    </span>
+                    <span class="content_body">
+                        Benefit from our marketing initiatives to amplify the visibility of your
+                        herbal products, including promotional campaigns, featured seller spotlights, and social media
+                        exposure.
+                    </span>
+
+                </div>
+                <div class="why_content">
+                    <span class="content_title">
+                        <img src="{% static '/sellerform/images/fees.png'%}">
+                        Low Transaction Fees
+                    </span>
+                    <span class="content_body">
+                        Benefit from competitive and transparent transaction fees, allowing you to maximize your
+                        earnings
+                        from each herbal sale.
+                    </span>
+
+                </div>
+                <div class="why_content">
+                    <span class="content_title">
+                        <img src="{% static '/sellerform/images/register.png'%}">
+                        Free registration
+                    </span>
+                    <span class="content_body">
+                        Account registration & listing items for sale is free
+
+                    </span>
+
+                </div>
+                <div class="why_content">
+                    <span class="content_title">
+                        <img src="{% static '/sellerform/images/audience.png'%}">
+                        Targeted Audience
+                    </span>
+                    <span class="content_body">
+                        Connect with a niche audience actively seeking herbal products,
+                        ensuring that your offerings are showcased to the right market.
+                    </span>
+
+                </div>
+                <div class="why_content">
+                    <span class="content_title">
+                        <img src="{% static '/sellerform/images/friendly.png'%}">
+                        User-Friendly Platform
+                    </span>
+                    <span class="content_body">
+                        Enjoy the ease of using our intuitive and user-friendly platform, making it simple for you
+                        to manage your herbal listings, and engage with customers effortlessly.
+                    </span>
+
+                </div>
+                <div class="why_content">
+                    <span class="content_title">
+                        <img src="{% static '/sellerform/images/reach.png'%}">
+                        Reach
+
+
+                    </span>
+                    <span class="content_body">
+                        Leverage our platform's global presence to introduce your unique herbal
+                        products to customers around the world, expanding your market beyond geographical boundaries.
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="bottom_content_parent">
+            <div class="why_sell-text">
+                3 Simple ways to start selling
+            </div>
+            <div class="content_grid">
+                <div class="why_content">
+                    <span class="content_title">
+                        <img src="{% static '/sellerform/images/signup.png'%}">
+                        Sign up for free
+
+                    </span>
+                    <span class="content_body">
+                        Create your account through our website with just your username
+                    </span>
+
+                </div>
+                <div class="why_content">
+                    <span class="content_title">
+                        <img src="{% static '/sellerform/images/profilepicture.png'%}">
+                        Add profile picture
+                    </span>
+                    <span class="content_body">
+                        Complete your profile by providing your picture so that we can identify you as well as maintain your identity as verified seller
+                    </span>
+
+                </div>
+                <div class="why_content">
+                    <span class="content_title">
+                        <img src="{% static '/sellerform/images/listproduct.png'%}">
+                        List products
+                    </span>
+                    <span class="content_body">
+                        Add products to your store through seller account . Start selling as soon as your products go live after going through quality control
+
+                    </span>
+
+                </div>
+               
+           
+                
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- 
+    
+         
+    <main class="main_container">
+        <div class="sellerform_body">
+            <h1>Request Seller Status</h1>
+            
+    
+        </div>
+
+    </main> -->
+
+    <footer>
+        {% include 'dashboard/footer.html'%}
+    </footer>
+
+</body>
+
+
+</html>

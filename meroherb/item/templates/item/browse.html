@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'browse.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <title>Browse</title>
+
+</head>
+
+<style>
+    .checked {
+  color: orange;
+}
+  .rating {
+  border: none;
+  float: left;
+
+}
+
+.rating > label {
+   color: #9C9C9C;
+  font-size: 7px;
+  float:right;
+}
+
+
+.rating > label:before {
+  margin: 5px;
+  font-size: 2em;
+  font-family: FontAwesome;
+  content: "\f005";
+  display: inline-block;
+}
+
+.rating > input {
+  display: none;
+}
+
+.rating > input:checked ~ label,
+.rating:not(:checked) > label:hover,
+.rating:not(:checked) > label:hover ~ label {
+  color: #F79426;
+}
+
+.rating > input:checked + label:hover,
+.rating > input:checked ~ label:hover,
+.rating > label:hover ~ input:checked ~ label,
+.rating > input:checked ~ label:hover ~ label {
+  color: #FECE31;
+}
+
+
+#star{
+font-size: 10px;
+color:grey;
+}
+
+#check-star{
+font-size: 16px;
+
+}
+</style>
+<header>
+  {% include 'dashboard/navbar.html'%}
+
+</header>
+
+<body class="bg-gray-100 font-sans">
+    <div class="maincontent">
+        <div class="searchbar">
+            <div class="input-box">
+                <i class="uil uil-search"></i>
+                <form method="get" action="{% url 'item:browse' %}" class="flex items-center w-full">
+                    <input name="query" class="flex-grow py-4 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 border rounded-xl" type="text" value="{{query}}" placeholder="Search for a herb">
+                    <button class="btn">Search</button>
+                </form>
+            </div>
+
+            <div class="dropdown">
+                <button class="dropbtn">Price Range</button>
+                <div class="dropdown-content">
+                  <div class="wrapper">
+                    <form method="get"  action="{% url 'item:browse' %}" >
+                    <div class="price-input">
+                      <div class="field">
+                        <span>Min</span>
+                        <input type="number" class="input-min" name="input-min" value="2500">
+                      </div>
+                      <div class="separator">-</div>
+                      <div class="field">
+                        <span>Max</span>
+                        <input type="number" class="input-max" name="input-max" value="7500">
+                      </div>
+                    </div>
+                    <div class="slider">
+                      <div class="progress"></div>
+                    </div>
+                    <div class="range-input">
+                      <input type="range" class="range-min" min="0" max="10000" value="2500" step="100">
+                      <input type="range" class="range-max" min="0" max="10000" value="7500" step="100">
+                    </div>
+                  </div>
+                  <div class="serchbtn">
+                    <button>Search</button>
+                  </div>
+
+                </form>
+                </div>
+              </div>
+        </div>
+
+        
+       
+        <div class="filtercat">
+            <ul>
+                <li>
+                    <a href="{% url 'item:browse' %}?query={{ query }}">Show All</a>
+                </li>
+                {% for category in categories %}
+                    <li {% if category.id == category_id %} style="background-color: #f0f0f0;" {% endif %}>
+                        <a href="{% url 'item:browse' %}?query={{ query }}&category={{ category.id }}">{{ category.name }}</a>
+                    </li>
+                {% endfor %}
+                    <li>
+                        <a href="{% url 'item:browse'%}" class="py-3 px-4 bg-yellow-500 text-lg rounded-xl text-white">Clear Filters</a>
+                    </li>
+            </ul>
+        </div>
+        
+        <!-- Card Views -->
+        <div class="container-card">
+            {% for item in items_with_images %}
+                <div class="card bg-herb-box rounded-xl mb-6">
+                    <a href="{% url 'item:detail' item.product.id %}">
+                        <div class="card-image" style="background-image: url('{{item.image_url}}');position: relative;">
+                          {% if item.product.discount > 1.00%}
+                          <p class="showcase-badge">{{item.product.discount}}%</p>
+                          {%else%}
+                          {%endif%}
+                        </div>
+                  
+                        <div style="display: flex; flex-flow: column wrap; gap: 1.2vh;">
+                            <h2 class="text-xl text-black font-semibold" style="text-decoration: none;">{{ item.product.name }}</h2>
+                            <p class="text-gray-500">
+                              {% if item.product.discounted_price %}
+                              <p style="text-decoration: none; color: hsl(152, 51%, 52%);">${{ item.product.discounted_price|floatformat:2 }}</p>
+                         
+                              {% else %}
+                              <p style="color: hsl(152, 51%, 52%);">${{ item.product.price }}</p>
+                              {% endif %}
+                            </p>
+                            <!-- Check for average_rating existence -->
+                            {% if item.product.average_rating %}
+                                <div class="rating_showcase">
+                                    <!-- Display stars based on average_rating -->
+                                    {% for i in "12345" %}
+                                        {% if i|add:"0" <= item.product.average_rating %}
+                                            <i class="fa fa-star checked" id="check-star"></i>
+                                        {% else %}
+                                            <i class="fa fa-star" id="check-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <p>Rating: {{ item.product.average_rating|floatformat:2 }}</p>
+                                </div>
+                                <!-- End of star display -->
+                            {% else %}
+                                <!-- If there are no ratings -->
+                                <div class="rating_showcase">
+                                    <i class="fa fa-star" id="star"></i>
+                                    <i class="fa fa-star" id="star"></i>
+                                    <i class="fa fa-star" id="star"></i>
+                                    <i class="fa fa-star" id="star"></i>
+                                    <i class="fa fa-star" id="star"></i>
+                                    &nbsp;<span>No ratings</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+  <script src="{% static 'browse.js'%}"></script>
+</body>
+
+</html>
