@@ -7,6 +7,22 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .models import Chatting
 
+from core.models import AuditLog
+import re
+from django.core.exceptions import SuspiciousOperation
+
+
+def sanitize_backend_input(value):
+    value = re.sub(r'<script.*?>.*?</script>', '', value, flags=re.IGNORECASE)
+    value = re.sub(r'(\$ne|\$eq|\$gt|\$lt|\$regex|\{|\})', '', value, flags=re.IGNORECASE)
+    value = re.sub(r'alert\s*\(', '', value, flags=re.IGNORECASE)
+    return value
+
+def validate_backend_input(value):
+    if re.search(r'script|<|>|alert|\$ne|\{|\}', value, re.IGNORECASE):
+        raise SuspiciousOperation('Security error: Malicious input detected.')
+    return value
+
 @login_required
 def new_conversation (request, item_pk):
     item = get_object_or_404(Item, pk=item_pk)
@@ -23,6 +39,11 @@ def new_conversation (request, item_pk):
         form = ConversationMessageForm(request.POST)
 
         if form.is_valid():
+            # Sanitize and validate all fields
+            cleaned = form.cleaned_data.copy()
+            for key in cleaned:
+                cleaned[key] = sanitize_backend_input(str(cleaned[key]))
+                validate_backend_input(cleaned[key])
             conversation = Chatting.objects.create(item=item)
             conversation.members.add(request.user)
             conversation.members.add(item.created_by)
@@ -31,7 +52,32 @@ def new_conversation (request, item_pk):
             conversation_message = form.save(commit=False)
             conversation_message.conversation=conversation
             conversation_message.created_by = request.user
+            conversation_message.content = cleaned.get('content', conversation_message.content)
             conversation_message.save()
+
+            # Audit log for new conversation
+            AuditLog.objects.create(
+                user=request.user,
+                user_role='admin' if request.user.is_superuser else 'customer',
+                action='CREATE_CONVERSATION',
+                entity='Chatting',
+                entity_id=str(conversation.id),
+                old_value=None,
+                new_value={'item': item_pk, 'members': [request.user.id, item.created_by.id]},
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT')
+            )
+            AuditLog.objects.create(
+                user=request.user,
+                user_role='admin' if request.user.is_superuser else 'customer',
+                action='SEND_MESSAGE',
+                entity='ConversationMessage',
+                entity_id=str(conversation_message.id),
+                old_value=None,
+                new_value={'content': conversation_message.content},
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT')
+            )
 
             return redirect('item:detail', pk=item_pk)
     else:
@@ -89,12 +135,31 @@ def detail(request, pk):
         form=ConversationMessageForm(request.POST)
 
         if form.is_valid():
-            conversation_message = form .save(commit=False)
+            # Sanitize and validate all fields
+            cleaned = form.cleaned_data.copy()
+            for key in cleaned:
+                cleaned[key] = sanitize_backend_input(str(cleaned[key]))
+                validate_backend_input(cleaned[key])
+            conversation_message = form.save(commit=False)
             conversation_message.conversation = conversation
             conversation_message.created_by = request.user
+            conversation_message.content = cleaned.get('content', conversation_message.content)
             conversation_message.save()
 
             conversation.save()
+
+            # Audit log for sending message
+            AuditLog.objects.create(
+                user=request.user,
+                user_role='admin' if request.user.is_superuser else 'customer',
+                action='SEND_MESSAGE',
+                entity='ConversationMessage',
+                entity_id=str(conversation_message.id),
+                old_value=None,
+                new_value={'content': conversation_message.content},
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT')
+            )
 
             return redirect('chatting:detail', pk=pk)
     else:
