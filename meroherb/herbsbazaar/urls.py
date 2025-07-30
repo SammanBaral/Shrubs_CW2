@@ -10,7 +10,7 @@ from django.urls import path, include
 # Import Debug Toolbar only for development
 
 
-app_name = "meroherb"
+app_name = "herbsbazaar"
 
 urlpatterns = [
     path('', include('core.urls')),

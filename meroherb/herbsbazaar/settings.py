@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'herbsbazaar.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Meroherbs',
+        'NAME': 'HerbsBazaar',
         'USER': 'postgres',
         'PASSWORD': 'crusher',
         'HOST': 'localhost',  # Replace with your PostgreSQL server's address if necessary
@@ -143,5 +143,5 @@ EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST='smtp.gmail.com'
 EMAIL_PORT= 587
 EMAIL_USE_TLS= True
-EMAIL_HOST_USER='meroherbs0@gmail.com'
+EMAIL_HOST_USER='herbsbazaar@gmail.com'
 EMAIL_HOST_PASSWORD='abxx zbeb njtu cjku '

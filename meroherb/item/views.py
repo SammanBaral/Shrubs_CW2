@@ -288,7 +288,7 @@ def buy_item(request, pk):
         seller_email = item.created_by.email
         subject = f'New Bill for Item: {item.name}'
         message = 'Please deliver the Item as soon as possible'  # You can customize this message
-        email = EmailMessage(subject, message, 'meroherbs0@gmail.com', [seller_email])
+        email = EmailMessage(subject, message, 'herbsbazaar@gmail.com', [seller_email])
         email.attach_file(bill.pdf.path)  # Attach the generated PDF
         email.send()
 
