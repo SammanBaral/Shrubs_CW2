@@ -9,7 +9,7 @@ def khalti_callback(request):
         "Content-Type": "application/json"
     }
     payload = {"pidx": pidx}
-    resp = requests.post("https://khalti.com/api/v2/epayment/lookup/", data=json.dumps(payload), headers=headers)
+    resp = requests.post("https://dev.khalti.com/api/v2/epayment/lookup/", data=json.dumps(payload), headers=headers)
     resp_data = resp.json()
     if resp.status_code == 200 and resp_data.get("status") == "Completed":
         bill = get_object_or_404(Bill, bill_no=bill_no)
@@ -60,7 +60,7 @@ def initiate_khalti_payment(request, bill_no):
         "Authorization": "Key e3c766f8643648e39f2251e90dfe7757",
         "Content-Type": "application/json"
     }
-    resp = requests.post("https://khalti.com/api/v2/epayment/initiate/", data=json.dumps(payload), headers=headers)
+    resp = requests.post("https://dev.khalti.com/api/v2/epayment/initiate/", data=json.dumps(payload), headers=headers)
     resp_data = resp.json()
     if resp.status_code == 200 and resp_data.get("payment_url"):
         return HttpResponseRedirect(resp_data["payment_url"])
@@ -89,7 +89,7 @@ def verify_khalti(request):
     headers = {
         "Authorization": "Key e3c766f8643648e39f2251e90dfe7757"
     }
-    resp = requests.post(url, payload, headers=headers)
+    resp = requests.post(url, data=payload, headers=headers)
     resp_data = resp.json()
     if resp.status_code == 200 and resp_data.get('idx'):
         # Mark bill as paid
@@ -105,10 +105,9 @@ def verify_khalti(request):
         if bill.pdf:
             email.attach_file(bill.pdf.path)
         email.send()
-        # Redirect to home page after payment
-        return JsonResponse({"success": True, "redirect_url": "/"})
+        return JsonResponse({"success": True})
     else:
-        return JsonResponse({"success": False, "message": "Payment verification failed!"}, status=400)
+        return JsonResponse({"success": False, "message": resp_data.get('detail', 'Payment verification failed!')}, status=400)
 
 from django.contrib.auth.models import User
 from django.utils import timezone
