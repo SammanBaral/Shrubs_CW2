@@ -60,7 +60,7 @@ def userprofile(request):
         print('POST data:', request.POST)
         if 'user-details-form-submit' in request.POST:
             print('Edit profile form submitted')
-            user_profile_form = UserProfileForm(request.POST, instance=user)
+            user_profile_form = UserProfileForm(request.POST, request.FILES, instance=user_profile_instance)
             try:
                 print('Form valid:', user_profile_form.is_valid())
                 print('Form errors:', user_profile_form.errors)
@@ -85,9 +85,11 @@ def userprofile(request):
                     profile.email = cleaned.get('email', profile.email)
                     profile.contact_number = cleaned.get('contact_number', profile.contact_number)
                     profile.location = cleaned.get('location', profile.location)
-                    # Also update User model email to keep in sync
+                    # Also update User model fields to keep in sync
                     if hasattr(profile, 'user') and profile.user:
                         profile.user.email = profile.email
+                        profile.user.first_name = profile.first_name
+                        profile.user.last_name = profile.last_name
                         profile.user.save()
                     # If email changed or not verified, generate OTP and send email
                     otp_needed = not profile.is_email_verified or (user_profile_instance and profile.email != user_profile_instance.email)
