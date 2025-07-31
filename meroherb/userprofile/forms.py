@@ -11,7 +11,7 @@ from sellerform.models import SellerAccount  # Import your UserProfile model
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['username', 'email', 'first_name', 'last_name', 'contact_number','location']
+        fields = ['username', 'first_name', 'last_name', 'contact_number', 'location']  # Removed email from editable fields
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
