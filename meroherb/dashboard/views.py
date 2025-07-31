@@ -23,17 +23,18 @@ def dashboardView(request):
 def logout_view(request):
     from core.models import AuditLog
     user = request.user
-    AuditLog.objects.create(
-        user=user,
-        user_role='admin' if user.is_superuser else 'customer',
-        action='LOGOUT',
-        entity='User',
-        entity_id=str(user.id),
-        old_value=None,
-        new_value=None,
-        ip_address=request.META.get('REMOTE_ADDR'),
-        user_agent=request.META.get('HTTP_USER_AGENT')
-    )
+    if user.is_authenticated:
+        AuditLog.objects.create(
+            user=user,
+            user_role='admin' if user.is_superuser else 'customer',
+            action='LOGOUT',
+            entity='User',
+            entity_id=str(user.id),
+            old_value=None,
+            new_value=None,
+            ip_address=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT')
+        )
     logout(request)
     return redirect ("core:login")
 def sellerprofile(request, pk):

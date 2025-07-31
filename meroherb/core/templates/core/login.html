@@ -15,23 +15,24 @@
   </head>
   <body >
     <div class="field-error">
-      {%if form.errors or form.non_field_errors%}
-      {% for field in form%}
-      {{field.errors}}
-      {%endfor%}
-    
-      <div class="alert alert-warning" style="width: 100vw; display: flex; align-items: center; justify-content: center; margin: 0;"  role="alert">
-        {{form.non_field_errors}}
-      </div>
-
-      {%endif%}
-
+      {% if error_message %}
+        <div class="alert alert-danger" style="width: 100vw; display: flex; align-items: center; justify-content: center; margin: 0;" role="alert">
+          {{ error_message }}
+        </div>
+      {% endif %}
+      {% if form.errors or form.non_field_errors %}
+        {% for field in form %}
+          {{ field.errors }}
+        {% endfor %}
+        <div class="alert alert-warning" style="width: 100vw; display: flex; align-items: center; justify-content: center; margin: 0;" role="alert">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
       {% for msg in messages %}
-
-      <div class="alert alert-warning" style="width: 100vw; display: flex; align-items: center; justify-content: center; margin: 0;"  role="alert">
-        {{msg}}
-      </div>
-      {%endfor%}
+        <div class="alert alert-warning" style="width: 100vw; display: flex; align-items: center; justify-content: center; margin: 0;" role="alert">
+          {{ msg }}
+        </div>
+      {% endfor %}
     </div>
           
     <div class="parent">

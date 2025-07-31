@@ -1,7 +1,17 @@
+
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
 from userprofile.models import UserProfile
+from django.core.exceptions import SuspiciousOperation
+from django.shortcuts import redirect, render
+from .forms import SignupForm, LoginForm
+from item.models import Category, Item, ItemImageGallery
+from django.contrib import messages
+from userprofile.views import sanitize_backend_input, validate_backend_input
+from django.db.models import Avg
+from decimal import Decimal
+
 def verify_otp(request):
     user_id = request.session.get('pending_user_id')
     if not user_id:
@@ -14,122 +24,124 @@ def verify_otp(request):
             user_profile.is_email_verified = True
             user_profile.email_otp = ''
             user_profile.save()
-            del request.session['pending_user_id']
-            messages.success(request, 'Email verified successfully! You can now log in.')
             return redirect('/login')
         else:
             messages.error(request, 'Invalid OTP. Please try again.')
+
     return render(request, 'core/verify_otp.html')
-from django.shortcuts import redirect, render
-from .forms import SignupForm, LoginForm
-from item.models import Category, Item, ItemImageGallery
-from django.contrib import messages
+
 
 def custom_login(request):
-    import sys
+    form = LoginForm(request.POST or None)
+    error_message = None
     if request.method == 'POST':
-        form = LoginForm(request, data=request.POST)
-        username = request.POST.get('username')
-        user_qs = User.objects.filter(username=username)
-        user = user_qs.first() if user_qs.exists() else None
-        profile = None
-        if user:
-            try:
-                profile = UserProfile.objects.get(user=user)
-            except UserProfile.DoesNotExist:
-                pass
-        if profile:
-            print(f"DEBUG: Username={username}, Attempts={profile.failed_login_attempts}, LockoutUntil={profile.lockout_until}", file=sys.stderr)
-        # Check lockout before validating form
-        if profile and profile.lockout_until and profile.lockout_until > timezone.now():
-            messages.error(request, 'Account is locked due to multiple failed login attempts. Please try again later.')
-            return render(request, 'core/login.html', {'form': form})
-        # Only validate form if not locked
-        if form.is_valid():
-            if profile:
-                profile.failed_login_attempts = 0
-                profile.lockout_until = None
-                profile.save()
-            from django.contrib.auth import login
-            login(request, form.get_user())
-            return redirect('/main/')
-        else:
-            if profile:
-                profile.failed_login_attempts += 1
-                if profile.failed_login_attempts >= 5:
-                    profile.lockout_until = timezone.now() + timedelta(minutes=15)
-                    profile.failed_login_attempts = 0
-                    messages.error(request, 'Account locked due to multiple failed login attempts. Try again in 15 minutes.')
-                profile.save()
-                print(f"DEBUG: After fail, Attempts={profile.failed_login_attempts}, LockoutUntil={profile.lockout_until}", file=sys.stderr)
-    else:
-        form = LoginForm()
-    return render(request, 'core/login.html', {'form': form})
-from item.decorators import unauthenticated_user
-from django.db.models import Avg
-from decimal import Decimal
-from userprofile.models import UserProfile  # Import your UserProfile model
+        try:
+            username = sanitize_backend_input(str(request.POST.get('username', '')))
+            password = sanitize_backend_input(str(request.POST.get('password', '')))
+            validate_backend_input(username)
+            validate_backend_input(password)
+            user_qs = User.objects.filter(username=username)
+            user = user_qs.first() if user_qs.exists() else None
+            # Brute-force protection and lockout logic
+            user_profile = None
+            if user:
+                try:
+                    user_profile = UserProfile.objects.get(user=user)
+                except UserProfile.DoesNotExist:
+                    user_profile = None
+            if user_profile and user_profile.lockout_until:
+                if timezone.now() < user_profile.lockout_until:
+                    error_message = 'Account locked due to too many failed attempts. Try again later.'
+                    return render(request, 'core/login.html', {'form': form, 'error_message': error_message})
+                else:
+                    user_profile.failed_login_attempts = 0
+                    user_profile.lockout_until = None
+                    user_profile.save()
+            if user is not None:
+                from django.contrib.auth import authenticate, login
+                user_auth = authenticate(request, username=username, password=password)
+                if user_auth is not None:
+                    if user_profile:
+                        user_profile.failed_login_attempts = 0
+                        user_profile.lockout_until = None
+                        user_profile.save()
+                    login(request, user_auth)
+                    from core.models import AuditLog
+                    AuditLog.objects.create(
+                        user=user_auth,
+                        user_role='admin' if user_auth.is_superuser else 'customer',
+                        action='LOGIN',
+                        entity='User',
+                        entity_id=str(user_auth.id),
+                        old_value=None,
+                        new_value=None,
+                        ip_address=request.META.get('REMOTE_ADDR'),
+                        user_agent=request.META.get('HTTP_USER_AGENT')
+                    )
+                    return redirect('core:main')
+                else:
+                    if user_profile:
+                        user_profile.failed_login_attempts += 1
+                        if user_profile.failed_login_attempts >= 5:
+                            user_profile.lockout_until = timezone.now() + timedelta(minutes=15)
+                            error_message = 'Account locked for 15 minutes due to too many failed attempts.'
+                        else:
+                            error_message = f'Invalid username or password. {5 - user_profile.failed_login_attempts} attempts left.'
+                        user_profile.save()
+                    else:
+                        error_message = 'Invalid username or password.'
+            else:
+                error_message = 'Invalid username or password.'
+        except SuspiciousOperation as se:
+            error_message = 'Security error: Malicious or unsafe input detected. Please use valid characters.'
+        except Exception as e:
+            error_message = f'Unexpected error: {e}'
+    return render(request, 'core/templates/core/login.html', {'form': form, 'error_message': error_message})
 
-@unauthenticated_user
+
 def signup(request):
+    error_message = None
+    form = SignupForm(request.POST or None)
     if request.method == 'POST':
-        form = SignupForm(request.POST)
         if form.is_valid():
-            # Create User instance
-            user = form.save()
-
-            # Create UserProfile instance
-            import random
-            from django.core.mail import EmailMessage
-            from django.conf import settings
-            otp = str(random.randint(100000, 999999))
-            user_profile = UserProfile.objects.create(
-                user=user,
-                username=form.cleaned_data['username'],
-                contact_number=form.cleaned_data['contact_number'],
-                location=form.cleaned_data['location'],
-                first_name=form.cleaned_data['first_name'],
-                last_name=form.cleaned_data['last_name'],
-                email=form.cleaned_data['email'],
-                email_otp=otp,
-                is_email_verified=False,
-            )
-            user_profile.photo = 'default_user.png'
-            user_profile.save()
-
-            # Audit log for signup
-            from core.models import AuditLog
-            AuditLog.objects.create(
-                user=user,
-                user_role='admin' if user.is_superuser else 'customer',
-                action='SIGNUP',
-                entity='User',
-                entity_id=str(user.id),
-                old_value=None,
-                new_value={
-                    'username': user.username,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name
-                },
-                ip_address=request.META.get('REMOTE_ADDR'),
-                user_agent=request.META.get('HTTP_USER_AGENT')
-            )
-
-            email = EmailMessage(
-                'Your Email Verification OTP',
-                f'Your OTP is: {otp}',
-                settings.EMAIL_HOST_USER,
-                [user_profile.email],
-            )
-            email.send(fail_silently=False)
-            messages.info(request, 'OTP sent to your email. Please verify.')
-            request.session['pending_user_id'] = user.id
-            return redirect('/verify-otp/')
-    else:
-        form = SignupForm()
-
-    return render(request, 'core/signup.html', {'form': form})
+            username = sanitize_backend_input(str(form.cleaned_data['username']))
+            password = sanitize_backend_input(str(form.cleaned_data['password']))
+            email = sanitize_backend_input(str(form.cleaned_data['email']))
+            try:
+                validate_backend_input(username)
+                validate_backend_input(password)
+                validate_backend_input(email)
+                if User.objects.filter(username=username).exists():
+                    error_message = 'Username already exists.'
+                elif User.objects.filter(email=email).exists():
+                    error_message = 'Email already exists.'
+                else:
+                    user = User.objects.create_user(username=username, password=password, email=email)
+                    user.save()
+                    # Audit log for signup
+                    from core.models import AuditLog
+                    AuditLog.objects.create(
+                        user=user,
+                        user_role='admin' if user.is_superuser else 'customer',
+                        action='SIGNUP',
+                        entity='User',
+                        entity_id=str(user.id),
+                        old_value=None,
+                        new_value={
+                            'username': user.username,
+                            'email': user.email,
+                            'first_name': user.first_name,
+                            'last_name': user.last_name
+                        },
+                        ip_address=request.META.get('REMOTE_ADDR'),
+                        user_agent=request.META.get('HTTP_USER_AGENT')
+                    )
+                    return redirect('core:login')
+            except SuspiciousOperation as se:
+                error_message = str(se)
+            except Exception as e:
+                error_message = f'Unexpected error: {e}'
+    return render(request, 'core/signup.html', {'form': form, 'error_message': error_message})
 
 
 

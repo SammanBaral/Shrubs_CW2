@@ -55,6 +55,7 @@ def userprofile(request):
 
     otp_form = OTPVerificationForm()
     otp_required = False
+    error_message = None
     if request.method == 'POST':
         if 'user-details-form-submit' in request.POST:
             user_profile_form = UserProfileForm(request.POST, instance=user)
@@ -118,7 +119,7 @@ def userprofile(request):
                             print('AuditLog created:', log)
                         except Exception as log_error:
                             print('AuditLog creation failed:', log_error)
-                        return render(request, 'userprofile/otp_verify.html', {'otp_form': otp_form, 'user': user})
+                        return render(request, 'userprofile/otp_verify.html', {'otp_form': otp_form, 'user': user, 'error_message': error_message})
                     else:
                         profile.save()
                         messages.success(request, 'User details updated successfully.')
@@ -142,51 +143,58 @@ def userprofile(request):
                             user_agent=request.META.get('HTTP_USER_AGENT')
                         )
                         messages.success(request, 'User details updated successfully.')
+            except SuspiciousOperation as se:
+                error_message = str(se)
+                return render(request, 'userprofile/userprofile.html', {'user': user, 'user_profile_form': user_profile_form, 'password_change_form': password_change_form, 'error_message': error_message})
             except ValidationError as e:
                 messages.error(request, f'Error updating user details: {e}')
             except Exception as e:
                 messages.error(request, f'An unexpected error occurred: {e}')
         elif 'otp-verify-form-submit' in request.POST:
             otp_form = OTPVerificationForm(request.POST)
-            if otp_form.is_valid():
-                otp_input = sanitize_backend_input(otp_form.cleaned_data['otp'])
-                validate_backend_input(otp_input)
-                user_profile_instance = UserProfile.objects.get(user=user)
-                if user_profile_instance.email_otp == otp_input:
-                    user_profile_instance.is_email_verified = True
-                    user_profile_instance.email_otp = ''
-                    user_profile_instance.save()
-                    # Audit log for email verification
-                    from core.models import AuditLog
-                    AuditLog.objects.create(
-                        user=request.user,
-                        user_role='admin' if request.user.is_superuser else 'customer',
-                        action='VERIFY_EMAIL',
-                        entity='UserProfile',
-                        entity_id=str(user_profile_instance.id),
-                        old_value=None,
-                        new_value={'is_email_verified': True},
-                        ip_address=request.META.get('REMOTE_ADDR'),
-                        user_agent=request.META.get('HTTP_USER_AGENT')
-                    )
-                    messages.success(request, 'Email verified successfully!')
-                    return redirect('userprofile:userprofile')
-                else:
-                    # Audit log for failed email verification
-                    from core.models import AuditLog
-                    AuditLog.objects.create(
-                        user=request.user,
-                        user_role='admin' if request.user.is_superuser else 'customer',
-                        action='FAILED_VERIFY_EMAIL',
-                        entity='UserProfile',
-                        entity_id=str(user_profile_instance.id),
-                        old_value=None,
-                        new_value={'attempted_otp': otp_input},
-                        ip_address=request.META.get('REMOTE_ADDR'),
-                        user_agent=request.META.get('HTTP_USER_AGENT')
-                    )
-                    messages.error(request, 'Invalid OTP. Please try again.')
-                    return render(request, 'userprofile/otp_verify.html', {'otp_form': otp_form, 'user': user})
+            try:
+                if otp_form.is_valid():
+                    otp_input = sanitize_backend_input(otp_form.cleaned_data['otp'])
+                    validate_backend_input(otp_input)
+                    user_profile_instance = UserProfile.objects.get(user=user)
+                    if user_profile_instance.email_otp == otp_input:
+                        user_profile_instance.is_email_verified = True
+                        user_profile_instance.email_otp = ''
+                        user_profile_instance.save()
+                        # Audit log for email verification
+                        from core.models import AuditLog
+                        AuditLog.objects.create(
+                            user=request.user,
+                            user_role='admin' if request.user.is_superuser else 'customer',
+                            action='VERIFY_EMAIL',
+                            entity='UserProfile',
+                            entity_id=str(user_profile_instance.id),
+                            old_value=None,
+                            new_value={'is_email_verified': True},
+                            ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT')
+                        )
+                        messages.success(request, 'Email verified successfully!')
+                        return redirect('userprofile:userprofile')
+                    else:
+                        # Audit log for failed email verification
+                        from core.models import AuditLog
+                        AuditLog.objects.create(
+                            user=request.user,
+                            user_role='admin' if request.user.is_superuser else 'customer',
+                            action='FAILED_VERIFY_EMAIL',
+                            entity='UserProfile',
+                            entity_id=str(user_profile_instance.id),
+                            old_value=None,
+                            new_value={'attempted_otp': otp_input},
+                            ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT')
+                        )
+                        messages.error(request, 'Invalid OTP. Please try again.')
+                        return render(request, 'userprofile/otp_verify.html', {'otp_form': otp_form, 'user': user, 'error_message': error_message})
+            except SuspiciousOperation as se:
+                error_message = str(se)
+                return render(request, 'userprofile/otp_verify.html', {'otp_form': otp_form, 'user': user, 'error_message': error_message})
         elif 'password-change-form-submit' in request.POST:
             try:
                 password_change_form = PasswordChangeForm(user, request.POST)
@@ -208,17 +216,20 @@ def userprofile(request):
                         user_agent=request.META.get('HTTP_USER_AGENT')
                     )
                     messages.success(request, 'Password changed successfully.')
+            except SuspiciousOperation as se:
+                error_message = str(se)
+                return render(request, 'userprofile/userprofile.html', {'user': user, 'user_profile_form': user_profile_form, 'password_change_form': password_change_form, 'error_message': error_message})
             except ValidationError as e:
                 messages.error(request, f'Error changing password: {e}')
             except Exception as e:
                 messages.error(request, f'An unexpected error occurred: {e}')
 
-        return redirect('userprofile:userprofile')
+            return redirect('userprofile:userprofile')
     else:
         user_profile_form = UserProfileForm(instance=user_profile_instance)
         password_change_form = PasswordChangeForm(request.user)
 
-    return render(request, 'userprofile/userprofile.html', {'user': user, 'user_profile_form': user_profile_form, 'password_change_form': password_change_form})
+    return render(request, 'userprofile/userprofile.html', {'user': user, 'user_profile_form': user_profile_form, 'password_change_form': password_change_form, 'error_message': error_message})
 
 # ------------------ CATEGORY CRUD VIEWS WITH AUDIT LOGGING ------------------
 from core.models import AuditLog
@@ -229,65 +240,95 @@ from django.views.decorators.http import require_POST
 @login_required
 @require_POST
 def create_category(request):
-    name = request.POST.get('name')
-    description = request.POST.get('description')
-    category = Category.objects.create(name=name, description=description)
-    AuditLog.objects.create(
-        user=request.user,
-        user_role='admin' if request.user.is_superuser else 'customer',
-        action='CREATE_CATEGORY',
-        entity='Category',
-        entity_id=str(category.id),
-        old_value=None,
-        new_value={'name': name, 'description': description},
-        ip_address=request.META.get('REMOTE_ADDR'),
-        user_agent=request.META.get('HTTP_USER_AGENT')
-    )
-    return HttpResponseRedirect(reverse('dashboard:category_list'))
-
-@login_required
-def update_category(request, category_id):
-    category = Category.objects.get(id=category_id)
-    old_value = {'name': category.name, 'description': category.description}
-    if request.method == 'POST':
+    error_message = None
+    try:
         name = request.POST.get('name')
         description = request.POST.get('description')
-        category.name = name
-        category.description = description
-        category.save()
+        name = sanitize_backend_input(str(name))
+        description = sanitize_backend_input(str(description))
+        validate_backend_input(name)
+        validate_backend_input(description)
+        category = Category.objects.create(name=name, description=description)
         AuditLog.objects.create(
             user=request.user,
             user_role='admin' if request.user.is_superuser else 'customer',
-            action='UPDATE_CATEGORY',
+            action='CREATE_CATEGORY',
             entity='Category',
             entity_id=str(category.id),
-            old_value=old_value,
+            old_value=None,
             new_value={'name': name, 'description': description},
             ip_address=request.META.get('REMOTE_ADDR'),
             user_agent=request.META.get('HTTP_USER_AGENT')
         )
         return HttpResponseRedirect(reverse('dashboard:category_list'))
-    return render(request, 'dashboard/category_edit.html', {'category': category})
+    except SuspiciousOperation as se:
+        error_message = str(se)
+        return render(request, 'dashboard/category_edit.html', {'error_message': error_message})
+
+@login_required
+def update_category(request, category_id):
+    category = Category.objects.get(id=category_id)
+    old_value = {'name': category.name, 'description': category.description}
+    error_message = None
+    if request.method == 'POST':
+        try:
+            name = request.POST.get('name')
+            description = request.POST.get('description')
+            name = sanitize_backend_input(str(name))
+            description = sanitize_backend_input(str(description))
+            validate_backend_input(name)
+            validate_backend_input(description)
+            category.name = name
+            category.description = description
+            category.save()
+            AuditLog.objects.create(
+                user=request.user,
+                user_role='admin' if request.user.is_superuser else 'customer',
+                action='UPDATE_CATEGORY',
+                entity='Category',
+                entity_id=str(category.id),
+                old_value=old_value,
+                new_value={'name': name, 'description': description},
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT')
+            )
+            return HttpResponseRedirect(reverse('dashboard:category_list'))
+        except SuspiciousOperation as se:
+            error_message = str(se)
+            return render(request, 'dashboard/category_edit.html', {'category': category, 'error_message': error_message})
+    return render(request, 'dashboard/category_edit.html', {'category': category, 'error_message': error_message})
 
 @login_required
 def delete_category(request, category_id):
     category = Category.objects.get(id=category_id)
     old_value = {'name': category.name, 'description': category.description}
+    error_message = None
     if request.method == 'POST':
-        category.delete()
-        AuditLog.objects.create(
-            user=request.user,
-            user_role='admin' if request.user.is_superuser else 'customer',
-            action='DELETE_CATEGORY',
-            entity='Category',
-            entity_id=str(category_id),
-            old_value=old_value,
-            new_value=None,
-            ip_address=request.META.get('REMOTE_ADDR'),
-            user_agent=request.META.get('HTTP_USER_AGENT')
-        )
-        return HttpResponseRedirect(reverse('dashboard:category_list'))
-    return render(request, 'dashboard/category_confirm_delete.html', {'category': category})
+        try:
+            # Optionally validate category name/description if present in POST
+            name = request.POST.get('name', category.name)
+            description = request.POST.get('description', category.description)
+            name = sanitize_backend_input(str(name))
+            description = sanitize_backend_input(str(description))
+            validate_backend_input(name)
+            validate_backend_input(description)
+            category.delete()
+            AuditLog.objects.create(
+                user=request.user,
+                user_role='admin' if request.user.is_superuser else 'customer',
+                action='DELETE_CATEGORY',
+                entity='Category',
+                entity_id=str(category_id),
+                old_value=old_value,
+                new_value=None,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT')
+            )
+            return HttpResponseRedirect(reverse('dashboard:category_list'))
+        except SuspiciousOperation as se:
+            error_message = str(se)
+            return render(request, 'dashboard/category_confirm_delete.html', {'category': category, 'error_message': error_message})
+    return render(request, 'dashboard/category_confirm_delete.html', {'category': category, 'error_message': error_message})
 
 @receiver(post_save, sender=LogEntry)
 def admin_action_log(sender, instance, created, **kwargs):
