@@ -57,12 +57,17 @@ def userprofile(request):
     otp_required = False
     error_message = None
     if request.method == 'POST':
+        print('POST data:', request.POST)
         if 'user-details-form-submit' in request.POST:
+            print('Edit profile form submitted')
             user_profile_form = UserProfileForm(request.POST, instance=user)
             try:
+                print('Form valid:', user_profile_form.is_valid())
+                print('Form errors:', user_profile_form.errors)
                 if user_profile_form.is_valid():
                     # Sanitize and validate all fields
                     cleaned = user_profile_form.cleaned_data
+                    print('Cleaned data:', cleaned)
                     for key in cleaned:
                         cleaned[key] = sanitize_backend_input(str(cleaned[key]))
                         validate_backend_input(cleaned[key])
@@ -74,6 +79,7 @@ def userprofile(request):
                         'location': user_profile_instance.location if user_profile_instance else ''
                     }
                     profile = user_profile_form.save(commit=False)
+                    print('Profile before save:', profile)
                     profile.first_name = cleaned.get('first_name', profile.first_name)
                     profile.last_name = cleaned.get('last_name', profile.last_name)
                     profile.email = cleaned.get('email', profile.email)
@@ -81,6 +87,7 @@ def userprofile(request):
                     profile.location = cleaned.get('location', profile.location)
                     # If email changed or not verified, generate OTP and send email
                     otp_needed = not profile.is_email_verified or (user_profile_instance and profile.email != user_profile_instance.email)
+                    print('OTP needed:', otp_needed)
                     if otp_needed:
                         import random
                         otp = str(random.randint(100000, 999999))
@@ -95,6 +102,7 @@ def userprofile(request):
                         )
                         email.send(fail_silently=False)
                         messages.info(request, 'OTP sent to your email. Please verify.')
+                        print('Saving profile with OTP...')
                         profile.save()
                         # Audit log for profile update
                         from core.models import AuditLog
@@ -121,6 +129,7 @@ def userprofile(request):
                             print('AuditLog creation failed:', log_error)
                         return render(request, 'userprofile/otp_verify.html', {'otp_form': otp_form, 'user': user, 'error_message': error_message})
                     else:
+                        print('Saving profile...')
                         profile.save()
                         messages.success(request, 'User details updated successfully.')
                         # Audit log for profile update
@@ -144,11 +153,14 @@ def userprofile(request):
                         )
                         messages.success(request, 'User details updated successfully.')
             except SuspiciousOperation as se:
+                print('SuspiciousOperation:', se)
                 error_message = str(se)
                 return render(request, 'userprofile/userprofile.html', {'user': user, 'user_profile_form': user_profile_form, 'password_change_form': password_change_form, 'error_message': error_message})
             except ValidationError as e:
+                print('ValidationError:', e)
                 messages.error(request, f'Error updating user details: {e}')
             except Exception as e:
+                print('Exception:', e)
                 messages.error(request, f'An unexpected error occurred: {e}')
         elif 'otp-verify-form-submit' in request.POST:
             otp_form = OTPVerificationForm(request.POST)
@@ -196,11 +208,15 @@ def userprofile(request):
                 error_message = str(se)
                 return render(request, 'userprofile/otp_verify.html', {'otp_form': otp_form, 'user': user, 'error_message': error_message})
         elif 'password-change-form-submit' in request.POST:
+            print('Change password form submitted')
             try:
                 password_change_form = PasswordChangeForm(user, request.POST)
+                print('Form valid:', password_change_form.is_valid())
+                print('Form errors:', password_change_form.errors)
                 if password_change_form.is_valid():
                     new_password = sanitize_backend_input(password_change_form.cleaned_data['new_password1'])
                     validate_backend_input(new_password)
+                    print('Changing password to:', new_password)
                     password_change_form.save()
                     # Audit log for password change
                     from core.models import AuditLog
@@ -217,11 +233,14 @@ def userprofile(request):
                     )
                     messages.success(request, 'Password changed successfully.')
             except SuspiciousOperation as se:
+                print('SuspiciousOperation:', se)
                 error_message = str(se)
                 return render(request, 'userprofile/userprofile.html', {'user': user, 'user_profile_form': user_profile_form, 'password_change_form': password_change_form, 'error_message': error_message})
             except ValidationError as e:
+                print('ValidationError:', e)
                 messages.error(request, f'Error changing password: {e}')
             except Exception as e:
+                print('Exception:', e)
                 messages.error(request, f'An unexpected error occurred: {e}')
 
             return redirect('userprofile:userprofile')
