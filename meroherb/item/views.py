@@ -343,7 +343,7 @@ def buy_item(request, pk):
             user_role='admin' if request.user.is_superuser else 'customer',
             action='PLACE_ORDER',
             entity='Bill',
-            entity_id=str(bill.id),
+            entity_id=str(bill.bill_no),
             old_value=None,
             new_value={
                 'item': str(item),
