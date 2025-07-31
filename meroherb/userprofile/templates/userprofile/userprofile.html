@@ -80,7 +80,7 @@
                 </div>
                 <div class="col-md-9">
                     <div class="tab-content">
-                            <div class="tab-pane fade active show" id="account-general">
+                            <div class="tab-pane fade{% if not password_change_form.errors and not password_change_form.non_field_errors %} active show{% endif %}" id="account-general">
                                 <form method="post" enctype="multipart/form-data" id="user-details-form">
                                     {% csrf_token %}
                                    
@@ -129,20 +129,20 @@
                                 </form>
                             </div>
                                 <!-- Inside the 'account-change-password' tab -->
-                            <div class="tab-pane fade" id="account-change-password">
-                                {% if password_change_form.errors %}
-                                    {% for field in password_change_form %}
-                                        {% if field.errors %}
-                                            <div class="alert alert-danger" role="alert">
-                                                {{ field.errors }}
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% if password_change_form.non_field_errors %}
-                                        <div class="alert alert-danger" role="alert">
-                                            {{ password_change_form.non_field_errors }}
-                                        </div>
-                                    {% endif %}
+                            <div class="tab-pane fade{% if password_change_form.errors or password_change_form.non_field_errors %} active show{% endif %}" id="account-change-password">
+                                {% if password_change_form.errors or password_change_form.non_field_errors %}
+                                    <div class="alert alert-danger" role="alert">
+                                        <ul>
+                                            {% for field in password_change_form %}
+                                                {% for error in field.errors %}
+                                                    <li>{{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                            {% for error in password_change_form.non_field_errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
                                 {% endif %}
                                 {% for msg in messages %}
                                     <div class="alert alert-warning" role="alert">
