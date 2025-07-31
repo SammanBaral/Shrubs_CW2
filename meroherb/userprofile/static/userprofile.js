@@ -1,4 +1,3 @@
-// Frontend input validation and XSS/NoSQL protection demo
 function sanitizeInput(input) {
     // Remove script tags and suspicious patterns
     return input.replace(/<script.*?>.*?<\/script>/gi, '')
