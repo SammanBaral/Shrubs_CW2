@@ -39,7 +39,7 @@ def new_conversation (request, item_pk):
         form = ConversationMessageForm(request.POST)
 
         if form.is_valid():
-            # Sanitize and validate all fields
+            # Sanitize and validate all fields properly
             cleaned = form.cleaned_data.copy()
             for key in cleaned:
                 cleaned[key] = sanitize_backend_input(str(cleaned[key]))
