@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Buy with Khalti</h2>
+<button id="pay-button">Buy with Khalti</button>
+<script src="https://khalti.com/static/khalti-checkout.js"></script>
+<script>
+    var config = {
+        "publicKey": "78dd90d1ae374b8bb72841a001c5cb19",
+        "productIdentity": "ORDER_ID_{{ order.id }}",
+        "productName": "Your Product Name",
+        "productUrl": "http://localhost:8000/",
+        "eventHandler": {
+            onSuccess (payload) {
+                fetch('/verify-khalti/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        token: payload.token,
+                        amount: payload.amount,
+                        order_id: "{{ order.id }}"
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        window.location.href = data.pdf_url;
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            },
+            onError (error) {
+                alert("Payment failed!");
+            },
+            onClose () {
+                // Widget closed
+            }
+        }
+    };
+    var checkout = new KhaltiCheckout(config);
+    document.getElementById("pay-button").onclick = function () {
+        checkout.show({amount: {{ order.amount_paisa }} });
+    }
+</script>
+{% endblock %}

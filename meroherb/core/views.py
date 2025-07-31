@@ -1,3 +1,38 @@
+import requests
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.forms import PasswordChangeForm
+from userprofile.forms import UserProfileForm
+from item.models import Bill
+
+@csrf_exempt
+def verify_khalti(request):
+    import json
+    data = json.loads(request.body)
+    token = data.get('token')
+    amount = data.get('amount')
+    bill_id = data.get('bill_id')
+    url = "https://khalti.com/api/v2/payment/verify/"
+    payload = {
+        "token": token,
+        "amount": amount
+    }
+    headers = {
+        "Authorization": "Key e3c766f8643648e39f2251e90dfe7757"
+    }
+    resp = requests.post(url, payload, headers=headers)
+    resp_data = resp.json()
+    if resp.status_code == 200 and resp_data.get('idx'):
+        # Mark bill as paid
+        bill = get_object_or_404(Bill, bill_no=bill_id)
+        bill.is_paid = True
+        bill.save()
+        # Generate PDF (replace with your actual PDF generation logic)
+        pdf_url = f"/generate-pdf/{bill.bill_no}/"
+        return JsonResponse({"success": True, "pdf_url": pdf_url})
+    else:
+        return JsonResponse({"success": False, "message": "Payment verification failed!"}, status=400)
 
 from django.contrib.auth.models import User
 from django.utils import timezone
