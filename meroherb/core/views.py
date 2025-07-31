@@ -36,10 +36,14 @@ def custom_login(request):
     error_message = None
     if request.method == 'POST':
         try:
-            username = sanitize_backend_input(str(request.POST.get('username', '')))
-            password = sanitize_backend_input(str(request.POST.get('password', '')))
-            validate_backend_input(username)
-            validate_backend_input(password)
+            raw_username = str(request.POST.get('username', ''))
+            raw_password = str(request.POST.get('password', ''))
+            # Validate raw input first for XSS/NoSQL
+            validate_backend_input(raw_username)
+            validate_backend_input(raw_password)
+            # Then sanitize
+            username = sanitize_backend_input(raw_username)
+            password = sanitize_backend_input(raw_password)
             user_qs = User.objects.filter(username=username)
             user = user_qs.first() if user_qs.exists() else None
             # Brute-force protection and lockout logic
@@ -93,10 +97,10 @@ def custom_login(request):
             else:
                 error_message = 'Invalid username or password.'
         except SuspiciousOperation as se:
-            error_message = 'Security error: Malicious or unsafe input detected. Please use valid characters.'
+            error_message = str(se) if str(se) else 'Security error: Malicious or unsafe input detected. Please use valid characters.'
         except Exception as e:
             error_message = f'Unexpected error: {e}'
-    return render(request, 'core/templates/core/login.html', {'form': form, 'error_message': error_message})
+    return render(request, 'core/login.html', {'form': form, 'error_message': error_message})
 
 
 def signup(request):
