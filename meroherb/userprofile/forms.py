@@ -6,7 +6,7 @@ class OTPVerificationForm(forms.Form):
 from django import forms
 from django.contrib.auth.forms import PasswordChangeForm
 from .models import UserProfile
-from sellerform.models import SellerAccount  # Import your UserProfile model
+from sellerform.models import SellerAccount  
 
 class UserProfileForm(forms.ModelForm):
     class Meta:
