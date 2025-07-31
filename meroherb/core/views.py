@@ -65,6 +65,30 @@ def custom_login(request):
                 from django.contrib.auth import authenticate, login
                 user_auth = authenticate(request, username=username, password=password)
                 if user_auth is not None:
+                    # Password expiry enforcement
+                    from userprofile.views import PasswordHistory
+                    last_pw = PasswordHistory.objects.filter(user=user_auth).order_by('-changed_at').first()
+                    password_expired = False
+                    if last_pw and (timezone.now() - last_pw.changed_at).days > 30:
+                        password_expired = True
+                    if password_expired:
+                        messages.error(request, 'Your password has expired. Please set a new password.')
+                        from userprofile.views import userprofile
+                        # Render password change form directly
+                        password_change_form = PasswordChangeForm(user_auth)
+                        user_profile_instance = None
+                        try:
+                            user_profile_instance = UserProfile.objects.get(user=user_auth)
+                        except UserProfile.DoesNotExist:
+                            user_profile_instance = UserProfile.objects.create(user=user_auth)
+                        user_profile_form = UserProfileForm(instance=user_profile_instance)
+                        return render(request, 'userprofile/userprofile.html', {
+                            'user': user_auth,
+                            'user_profile_form': user_profile_form,
+                            'password_change_form': password_change_form,
+                            'error_message': 'Your password has expired. Please set a new password.',
+                            'password_expired': True
+                        })
                     if user_profile:
                         user_profile.failed_login_attempts = 0
                         user_profile.lockout_until = None

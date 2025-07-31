@@ -219,12 +219,36 @@ def userprofile(request):
                 password_change_form = PasswordChangeForm(user, request.POST)
                 print('Form valid:', password_change_form.is_valid())
                 print('Form errors:', password_change_form.errors)
+                # Password expiry check
+                last_pw = PasswordHistory.objects.filter(user=user).order_by('-changed_at').first()
+                password_expired = False
+                if last_pw and (timezone.now() - last_pw.changed_at).days > 30:
+                    password_expired = True
+                    messages.error(request, 'Your password has expired. Please set a new password.')
                 if password_change_form.is_valid():
                     new_password = sanitize_backend_input(password_change_form.cleaned_data['new_password1'])
                     validate_backend_input(new_password)
-                    print('Changing password to:', new_password)
+                    from django.contrib.auth.hashers import check_password, make_password
+                    last_passwords = PasswordHistory.objects.filter(user=user).order_by('-changed_at')[:3]
+                    reused = False
+                    for pw in last_passwords:
+                        if check_password(new_password, pw.password):
+                            password_change_form.add_error('new_password2', 'You cannot reuse your last 3 passwords.')
+                            reused = True
+                    if reused:
+                        return render(request, 'userprofile/userprofile.html', {
+                            'user': user,
+                            'user_profile_form': user_profile_form,
+                            'password_change_form': password_change_form,
+                            'error_message': error_message,
+                            'password_expired': password_expired
+                        })
                     password_change_form.save()
-                    # Audit log for password change
+                    PasswordHistory.objects.create(user=user, password=make_password(new_password))
+                    # Keep only last 3 passwords
+                    old_pw = PasswordHistory.objects.filter(user=user).order_by('-changed_at')[3:]
+                    for pw in old_pw:
+                        pw.delete()
                     from core.models import AuditLog
                     AuditLog.objects.create(
                         user=request.user,
@@ -245,7 +269,8 @@ def userprofile(request):
                         'user': user,
                         'user_profile_form': user_profile_form,
                         'password_change_form': password_change_form,
-                        'error_message': error_message
+                        'error_message': error_message,
+                        'password_expired': password_expired
                     })
             except SuspiciousOperation as se:
                 print('SuspiciousOperation:', se)
