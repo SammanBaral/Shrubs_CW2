@@ -108,7 +108,7 @@
             <div class="button_section">
 
             {% if show_khalti %}
-            <button id="payWithKhaltiBtn" style="background:#5cb85c;color:white;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;font-size:1rem;">Pay with Khalti</button>
+            <a href="{% url 'core:initiate_khalti_payment' bill.bill_no %}" style="background:#5cb85c;color:white;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;font-size:1rem;text-decoration:none;display:inline-block;">Pay with Khalti</a>
             {% endif %}
             </div>
 
@@ -127,6 +127,59 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    {% if show_khalti %}
+    <!-- Khalti JS SDK -->
+    <script src="https://khalti.com/static/khalti-checkout.js"></script>
+    <script>
+        document.getElementById('payWithKhaltiBtn').onclick = function() {
+            var config = {
+                "publicKey": "78dd90d1ae374b8bb72841a001c5cb19",
+                "productIdentity": "{{ bill.bill_no }}",
+                "productName": "{{ bill.item }}",
+                "productUrl": window.location.href,
+                "amount": Math.round({{ bill.discount_price|default:bill.total_amount }} * 100), // Khalti expects paisa
+                "eventHandler": {
+                    onSuccess (payload) {
+                        // Send payload.token and amount to backend for verification
+                        fetch('/verify-khalti/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({
+                                token: payload.token,
+                                amount: Math.round({{ bill.discount_price|default:bill.total_amount }} * 100),
+                                bill_id: {{ bill.bill_no }}
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if(data.success) {
+                                alert('Payment successful! Generating PDF...');
+                                window.location.href = data.pdf_url;
+                            } else {
+                                alert('Payment failed: ' + data.message);
+                            }
+                        })
+                        .catch(err => {
+                            alert('Error verifying payment.');
+                        });
+                    },
+                    onError (error) {
+                        alert('Khalti error: ' + (error.message || JSON.stringify(error)));
+                    },
+                    onClose () {
+                        // User closed payment widget
+                    }
+                }
+            };
+            var checkout = new KhaltiCheckout(config);
+            checkout.show({amount: Math.round({{ bill.discount_price|default:bill.total_amount }} * 100)});
+        };
+    </script>
+    {% endif %}
   </body>
 </html>
 

@@ -1,3 +1,71 @@
+# Khalti callback view to verify payment
+def khalti_callback(request):
+    pidx = request.GET.get('pidx')
+    bill_no = request.GET.get('purchase_order_id')
+    status = request.GET.get('status')
+    # Lookup payment status
+    headers = {
+        "Authorization": "Key e3c766f8643648e39f2251e90dfe7757",
+        "Content-Type": "application/json"
+    }
+    payload = {"pidx": pidx}
+    resp = requests.post("https://khalti.com/api/v2/epayment/lookup/", data=json.dumps(payload), headers=headers)
+    resp_data = resp.json()
+    if resp.status_code == 200 and resp_data.get("status") == "Completed":
+        bill = get_object_or_404(Bill, bill_no=bill_no)
+        bill.is_paid = True
+        bill.save()
+        # Send email to seller
+        from django.core.mail import EmailMessage
+        seller_email = bill.item.created_by.email
+        subject = f'New Bill for Item: {bill.item.name}'
+        message = 'Please deliver the Item as soon as possible'
+        email = EmailMessage(subject, message, 'herbsbazaar@gmail.com', [seller_email])
+        if bill.pdf:
+            email.attach_file(bill.pdf.path)
+        email.send()
+        return redirect('/')
+    else:
+        return render(request, "core/payment_failed.html", {"error": resp_data.get("detail", "Payment not completed")})
+import json
+from django.http import HttpResponseRedirect
+# Initiate Khalti payment (recommended API flow)
+def initiate_khalti_payment(request, bill_no):
+    bill = get_object_or_404(Bill, bill_no=bill_no)
+    # Convert USD to NPR (default rate: 133)
+    usd_to_npr = 133
+    npr_amount = int(float(bill.discount_price or bill.total_amount) * usd_to_npr * 100)  # in paisa
+    payload = {
+        "return_url": request.build_absolute_uri("/khalti/callback/"),
+        "website_url": request.build_absolute_uri("/"),
+        "amount": npr_amount,
+        "purchase_order_id": str(bill.bill_no),
+        "purchase_order_name": str(bill.item),
+        "customer_info": {
+            "name": bill.customer.get_full_name() or bill.customer.username,
+            "email": bill.customer.email,
+            "phone": bill.contact_info or "9800000000"
+        },
+        "product_details": [
+            {
+                "identity": str(bill.item.id),
+                "name": bill.item.name,
+                "total_price": npr_amount,
+                "quantity": bill.quantity,
+                "unit_price": npr_amount
+            }
+        ]
+    }
+    headers = {
+        "Authorization": "Key e3c766f8643648e39f2251e90dfe7757",
+        "Content-Type": "application/json"
+    }
+    resp = requests.post("https://khalti.com/api/v2/epayment/initiate/", data=json.dumps(payload), headers=headers)
+    resp_data = resp.json()
+    if resp.status_code == 200 and resp_data.get("payment_url"):
+        return HttpResponseRedirect(resp_data["payment_url"])
+    else:
+        return render(request, "core/payment_failed.html", {"error": resp_data.get("detail", "Payment initiation failed")})
 import requests
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -28,9 +96,17 @@ def verify_khalti(request):
         bill = get_object_or_404(Bill, bill_no=bill_id)
         bill.is_paid = True
         bill.save()
-        # Generate PDF (replace with your actual PDF generation logic)
-        pdf_url = f"/generate-pdf/{bill.bill_no}/"
-        return JsonResponse({"success": True, "pdf_url": pdf_url})
+        # Send email to seller
+        from django.core.mail import EmailMessage
+        seller_email = bill.item.created_by.email
+        subject = f'New Bill for Item: {bill.item.name}'
+        message = 'Please deliver the Item as soon as possible'
+        email = EmailMessage(subject, message, 'herbsbazaar@gmail.com', [seller_email])
+        if bill.pdf:
+            email.attach_file(bill.pdf.path)
+        email.send()
+        # Redirect to home page after payment
+        return JsonResponse({"success": True, "redirect_url": "/"})
     else:
         return JsonResponse({"success": False, "message": "Payment verification failed!"}, status=400)
 
