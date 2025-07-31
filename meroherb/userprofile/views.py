@@ -48,7 +48,7 @@ def userprofile(request):
     try:
         user_profile_instance = UserProfile.objects.get(user=user)
     except UserProfile.DoesNotExist:
-        user_profile_instance = None
+        user_profile_instance = UserProfile.objects.create(user=user)
 
     user_profile_form = UserProfileForm(request.POST or None, request.FILES or None, instance=user_profile_instance)
     password_change_form = PasswordChangeForm(user)
