@@ -348,9 +348,9 @@ def buy_item(request, pk):
             new_value={
                 'item': str(item),
                 'quantity': item.quantity_available,
-                'total_amount': item.price,
+                'total_amount': str(item.price),
                 'seller': item.created_by.username,
-                'discount_per': item.discount,
+                'discount_per': str(item.discount),
                 'discount_price': str(discounted_price),
                 'delivery': request.user.userprofile.location,
                 'contact_info': request.user.userprofile.contact_number
@@ -358,22 +358,9 @@ def buy_item(request, pk):
             ip_address=request.META.get('REMOTE_ADDR'),
             user_agent=request.META.get('HTTP_USER_AGENT')
         )
-        # Send email to the seller
-        template = get_template('item/bill_template.html')
-        html = template.render({'bill': bill})
-        
-        pdf_content = ContentFile(pisa.pisaDocument(BytesIO(html.encode('UTF-8'))).dest.getvalue())
-        bill.pdf.save(f'bill_{generated_bill_no}.pdf', pdf_content)
-
-        # Send email to the seller with the attached PDF
-        seller_email = item.created_by.email
-        subject = f'New Bill for Item: {item.name}'
-        message = 'Please deliver the Item as soon as possible'  # You can customize this message
-        email = EmailMessage(subject, message, 'herbsbazaar@gmail.com', [seller_email])
-        email.attach_file(bill.pdf.path)  # Attach the generated PDF
-        email.send()
-
-        return render(request, 'item/buy_item.html', {'item': item, 'bill': bill, 'generated_bill_no': generated_bill_no})
+        # Do NOT generate PDF or send email yet. Show Khalti payment option.
+        # Render buy_item.html with bill info and Khalti payment button
+        return render(request, 'item/buy_item.html', {'item': item, 'bill': bill, 'generated_bill_no': generated_bill_no, 'show_khalti': True})
 
     # Render the buy_item template initially
     return render(request, 'item/buy_item.html', {'item': item})
