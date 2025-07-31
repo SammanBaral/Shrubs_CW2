@@ -238,6 +238,15 @@ def userprofile(request):
                         user_agent=request.META.get('HTTP_USER_AGENT')
                     )
                     messages.success(request, 'Password changed successfully.')
+                    return redirect('userprofile:userprofile')
+                else:
+                    # Show errors in frontend
+                    return render(request, 'userprofile/userprofile.html', {
+                        'user': user,
+                        'user_profile_form': user_profile_form,
+                        'password_change_form': password_change_form,
+                        'error_message': error_message
+                    })
             except SuspiciousOperation as se:
                 print('SuspiciousOperation:', se)
                 error_message = str(se)
@@ -245,11 +254,11 @@ def userprofile(request):
             except ValidationError as e:
                 print('ValidationError:', e)
                 messages.error(request, f'Error changing password: {e}')
+                return render(request, 'userprofile/userprofile.html', {'user': user, 'user_profile_form': user_profile_form, 'password_change_form': password_change_form, 'error_message': error_message})
             except Exception as e:
                 print('Exception:', e)
                 messages.error(request, f'An unexpected error occurred: {e}')
-
-            return redirect('userprofile:userprofile')
+                return render(request, 'userprofile/userprofile.html', {'user': user, 'user_profile_form': user_profile_form, 'password_change_form': password_change_form, 'error_message': error_message})
     else:
         user_profile_form = UserProfileForm(instance=user_profile_instance)
         password_change_form = PasswordChangeForm(request.user)
