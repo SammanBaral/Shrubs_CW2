@@ -15,19 +15,17 @@ class UserProfileForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
+        # Always allow current user's own email
+        userprofile_pk = self.instance.pk if self.instance else None
+        user_obj = getattr(self.instance, 'user', None)
+        user_pk = user_obj.pk if user_obj else None
         # Check for duplicate in UserProfile (excluding self)
-        if UserProfile.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+        if UserProfile.objects.filter(email=email).exclude(pk=userprofile_pk).exists():
             raise forms.ValidationError('An account with this email already exists.')
         # Check for duplicate in User (excluding self)
-        user_qs = self.instance.user if hasattr(self.instance, 'user') else None
-        if user_qs:
-            if user_qs.email != email and user_qs.__class__.objects.filter(email=email).exclude(pk=user_qs.pk).exists():
-                raise forms.ValidationError('An account with this email already exists.')
-        else:
-            # If no user relation, check User model for duplicates
-            from django.contrib.auth.models import User
-            if User.objects.filter(email=email).exists():
-                raise forms.ValidationError('An account with this email already exists.')
+        from django.contrib.auth.models import User
+        if User.objects.filter(email=email).exclude(pk=user_pk).exists():
+            raise forms.ValidationError('An account with this email already exists.')
         return email
 
 

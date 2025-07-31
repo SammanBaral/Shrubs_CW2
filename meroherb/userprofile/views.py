@@ -85,6 +85,10 @@ def userprofile(request):
                     profile.email = cleaned.get('email', profile.email)
                     profile.contact_number = cleaned.get('contact_number', profile.contact_number)
                     profile.location = cleaned.get('location', profile.location)
+                    # Also update User model email to keep in sync
+                    if hasattr(profile, 'user') and profile.user:
+                        profile.user.email = profile.email
+                        profile.user.save()
                     # If email changed or not verified, generate OTP and send email
                     otp_needed = not profile.is_email_verified or (user_profile_instance and profile.email != user_profile_instance.email)
                     print('OTP needed:', otp_needed)
