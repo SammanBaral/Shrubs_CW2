@@ -107,17 +107,14 @@
 
             <div class="button_section">
 
+            {% if show_khalti %}
+            <button id="payWithKhaltiBtn" style="background:#5cb85c;color:white;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;font-size:1rem;">Pay with Khalti</button>
+            {% endif %}
             </div>
 
         </div>
         <form id="generatePdfForm" method="post" action="{% url 'item:generate_pdf' bill.bill_no %}">
-          {% csrf_token %}
-          <input type="hidden" name="customer_name" value="{{ bill.customer }}">
-          <input type="hidden" name="item_name" value="{{ bill.item }}">
-          <input type="hidden" name="quantity" value="{{ bill.quantity }}">
-          <input type="hidden" name="total_amount" value="{{ bill.total_amount }}">
-          <button type="submit" id="generatePdfBtn">Generate PDF</button>
-        </form>
+        <!-- PDF generation removed. Khalti payment is required first. -->
        
 
     </div>
