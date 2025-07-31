@@ -32,9 +32,9 @@
           <!--Upper welcome part-->
           <div class="group">
             <div class="card_upper">
-            <div class="welcome">
+            {% comment %} <div class="welcome">
                 <span class="welcome_to">Welcome to </span><span class="card_upper_herbsbazaar"> Herbs Bazaar</span>
-            </div>
+            </div> {% endcomment %}
             <div class="signin">SIGN IN</div>
           </div>
                   <!--Upper welcome part end-->
@@ -61,9 +61,9 @@
               </div>
               <div class="password1">
                 {{form.password1}}
-                <div id="password-strength-feedback" style="margin-top:4px;"></div>
               </div>
               <div class="password2">
+                <div id="password-strength-feedback" style="margin-top:4px;"></div>
                 {{form.password2}}
                 <button type="submit" class="signin-btn"> Sign in</button>
               </div>

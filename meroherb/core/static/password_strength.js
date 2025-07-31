@@ -5,10 +5,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const passwordInput = document.querySelector('input[name="password1"]');
     // Remove strength bar, only show colored feedback
 
-    // Use the static feedback div under the password field
+    // Use the static feedback div between password1 and password2 fields
     const feedback = document.getElementById('password-strength-feedback');
-    feedback.style.fontSize = '0.9rem';
-    feedback.style.marginTop = '4px';
+    if (feedback) {
+        feedback.style.fontSize = '0.8rem';
+        feedback.style.marginTop = '0px';
+    }
 
     passwordInput.addEventListener('input', function () {
         const val = passwordInput.value;
