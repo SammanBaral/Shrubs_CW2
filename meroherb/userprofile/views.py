@@ -231,10 +231,15 @@ def userprofile(request):
                     from django.contrib.auth.hashers import check_password, make_password
                     last_passwords = PasswordHistory.objects.filter(user=user).order_by('-changed_at')[:3]
                     reused = False
+                    # Check previous passwords
                     for pw in last_passwords:
                         if check_password(new_password, pw.password):
                             password_change_form.add_error('new_password2', 'You cannot reuse your last 3 passwords.')
                             reused = True
+                    # Check current password
+                    if check_password(new_password, user.password):
+                        password_change_form.add_error('new_password2', 'You cannot reuse your current password.')
+                        reused = True
                     if reused:
                         return render(request, 'userprofile/userprofile.html', {
                             'user': user,
