@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-e962akrc8383q396*()eb1_lq73rmecj_t4#$2tll#3j16rm%f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+#allwed hosts to pentest in burpsuite
+ALLOWED_HOSTS = ['*']
 
 
 #overriding default login redirect so that we can go to the desired page
