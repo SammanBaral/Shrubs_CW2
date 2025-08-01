@@ -64,6 +64,16 @@ color:grey;
 font-size: 16px;
 
 }
+.alert-error {
+  background: #ffe0e0;
+  color: #b30000;
+  border: 1px solid #ffb3b3;
+  padding: 1em;
+  border-radius: 6px;
+  margin-bottom: 1.5em;
+  text-align: center;
+  font-weight: 600;
+}
 </style>
 <header>
   {% include 'dashboard/navbar.html'%}
@@ -72,6 +82,9 @@ font-size: 16px;
 
 <body class="bg-gray-100 font-sans">
     <div class="maincontent">
+        {% if error_message %}
+        <div class="alert-error">{{ error_message }}</div>
+        {% endif %}
         <div class="searchbar">
             <div class="input-box">
                 <i class="uil uil-search"></i>

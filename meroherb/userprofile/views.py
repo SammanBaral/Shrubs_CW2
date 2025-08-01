@@ -159,18 +159,119 @@ def userprofile(request):
                         )
                         messages.success(request, 'User details updated successfully.')
             except SuspiciousOperation as se:
-                print('SuspiciousOperation:', se)
                 error_message = str(se)
                 return render(request, 'userprofile/userprofile.html', {'user': user, 'user_profile_form': user_profile_form, 'password_change_form': password_change_form, 'error_message': error_message})
-            except ValidationError as e:
-                print('ValidationError:', e)
-                messages.error(request, f'Error updating user details: {e}')
             except Exception as e:
-                print('Exception:', e)
-                messages.error(request, f'An unexpected error occurred: {e}')
-        elif 'otp-verify-form-submit' in request.POST:
-            otp_form = OTPVerificationForm(request.POST)
+                print('Exception in profile update:', e)
+                error_message = 'An unexpected error occurred while updating your profile.'
+                return render(request, 'userprofile/userprofile.html', {'user': user, 'user_profile_form': user_profile_form, 'password_change_form': password_change_form, 'error_message': error_message})
+    if request.method == 'POST':
+        print('POST data:', request.POST)
+        if 'user-details-form-submit' in request.POST:
+            print('Edit profile form submitted')
+            user_profile_form = UserProfileForm(request.POST, request.FILES, instance=user_profile_instance)
             try:
+                print('Form valid:', user_profile_form.is_valid())
+                print('Form errors:', user_profile_form.errors)
+                if user_profile_form.is_valid():
+                    # Sanitize and validate all fields
+                    cleaned = user_profile_form.cleaned_data
+                    print('Cleaned data:', cleaned)
+                    for key in cleaned:
+                        cleaned[key] = sanitize_backend_input(str(cleaned[key]))
+                        validate_backend_input(cleaned[key])
+                    old_profile = {
+                        'first_name': user_profile_instance.first_name if user_profile_instance else '',
+                        'last_name': user_profile_instance.last_name if user_profile_instance else '',
+                        'email': user_profile_instance.email if user_profile_instance else '',
+                        'contact_number': user_profile_instance.contact_number if user_profile_instance else '',
+                        'location': user_profile_instance.location if user_profile_instance else ''
+                    }
+                    profile = user_profile_form.save(commit=False)
+                    print('Profile before save:', profile)
+                    profile.first_name = cleaned.get('first_name', profile.first_name)
+                    profile.last_name = cleaned.get('last_name', profile.last_name)
+                    profile.email = cleaned.get('email', profile.email)
+                    profile.contact_number = cleaned.get('contact_number', profile.contact_number)
+                    profile.location = cleaned.get('location', profile.location)
+                    # Also update User model fields to keep in sync
+                    if hasattr(profile, 'user') and profile.user:
+                        profile.user.email = profile.email
+                        profile.user.first_name = profile.first_name
+                        profile.user.last_name = profile.last_name
+                        profile.user.save()
+                    # If email changed or not verified, generate OTP and send email
+                    otp_needed = not profile.is_email_verified or (user_profile_instance and profile.email != user_profile_instance.email)
+                    print('OTP needed:', otp_needed)
+                    if otp_needed:
+                        import random
+                        otp = str(random.randint(100000, 999999))
+                        profile.email_otp = otp
+                        profile.is_email_verified = False
+                        from django.conf import settings
+                        email = EmailMessage(
+                            'Your Email Verification OTP',
+                            f'Your OTP is: {otp}',
+                            settings.EMAIL_HOST_USER,
+                            [profile.email],
+                        )
+                        email.send(fail_silently=False)
+                        messages.info(request, 'OTP sent to your email. Please verify.')
+                        print('Saving profile with OTP...')
+                        profile.save()
+                        # Audit log for profile update
+                        from core.models import AuditLog
+                        try:
+                            log = AuditLog.objects.create(
+                                user=request.user,
+                                user_role='admin' if request.user.is_superuser else 'customer',
+                                action='UPDATE_PROFILE',
+                                entity='UserProfile',
+                                entity_id=str(profile.id),
+                                old_value=old_profile,
+                                new_value={
+                                    'first_name': profile.first_name,
+                                    'last_name': profile.last_name,
+                                    'email': profile.email,
+                                    'contact_number': profile.contact_number,
+                                    'location': profile.location
+                                },
+                                ip_address=request.META.get('REMOTE_ADDR'),
+                                user_agent=request.META.get('HTTP_USER_AGENT')
+                            )
+                            print('AuditLog created:', log)
+                        except Exception as log_error:
+                            print('AuditLog creation failed:', log_error)
+                        return render(request, 'userprofile/otp_verify.html', {'otp_form': otp_form, 'user': user, 'error_message': error_message})
+                    else:
+                        print('Saving profile...')
+                        profile.save()
+                        messages.success(request, 'User details updated successfully.')
+                        # Audit log for profile update
+                        from core.models import AuditLog
+                        AuditLog.objects.create(
+                            user=request.user,
+                            user_role='admin' if request.user.is_superuser else 'customer',
+                            action='UPDATE_PROFILE',
+                            entity='UserProfile',
+                            entity_id=str(profile.id),
+                            old_value=old_profile,
+                            new_value={
+                                'first_name': profile.first_name,
+                                'last_name': profile.last_name,
+                                'email': profile.email,
+                                'contact_number': profile.contact_number,
+                                'location': profile.location
+                            },
+                            ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT')
+                        )
+                        messages.success(request, 'User details updated successfully.')
+            except SuspiciousOperation as se:
+                error_message = str(se)
+            except Exception as e:
+                print('Exception in profile update:', e)
+                error_message = 'An unexpected error occurred while updating your profile.'
                 if otp_form.is_valid():
                     otp_input = sanitize_backend_input(otp_form.cleaned_data['otp'])
                     validate_backend_input(otp_input)

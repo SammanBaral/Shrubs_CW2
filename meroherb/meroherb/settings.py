@@ -138,7 +138,30 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-#SMTP Configuration
+
+# --- HTTPS & Cookie Security Settings ---
+# Redirect all HTTP to HTTPS (set True in production)
+SECURE_SSL_REDIRECT = True
+# Set Secure flag on session and CSRF cookies
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+# Prevent JavaScript access to session cookie
+SESSION_COOKIE_HTTPONLY = True
+# Prevent JavaScript access to CSRF cookie
+CSRF_COOKIE_HTTPONLY = True
+# HSTS (enable in production, adjust max_age as needed)
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+# X-Content-Type-Options header
+SECURE_CONTENT_TYPE_NOSNIFF = True
+# X-XSS-Protection header (modern browsers ignore, but safe to set)
+SECURE_BROWSER_XSS_FILTER = True
+# Referrer Policy
+SECURE_REFERRER_POLICY = 'same-origin'
+# --- End HTTPS & Cookie Security Settings ---
+
+# SMTP Configuration
 EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST='smtp.gmail.com'
 EMAIL_PORT= 587

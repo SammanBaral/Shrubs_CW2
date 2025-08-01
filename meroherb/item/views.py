@@ -23,11 +23,45 @@ def is_valid_queryparam(param):
 def browse(request): 
    
     query = request.GET.get('query', '')
-    category_id= request.GET.get('category', 0)
-    categories=Category.objects.all()
+    error_message = None
+    # XSS protection for query
+    try:
+        from userprofile.views import validate_backend_input, sanitize_backend_input
+        if query:
+            validate_backend_input(query)
+            query = sanitize_backend_input(query)
+    except Exception as e:
+        error_message = 'Invalid or potentially dangerous search input. Please use safe characters.'
+        query = ''
+    category_id = request.GET.get('category', 0)
+    categories = Category.objects.all()
     items = Item.objects.filter(is_sold=False)
-    price_min=request.GET.get('input-min',0)
-    price_max=request.GET.get('input-max',0)
+    price_min = request.GET.get('input-min', 0)
+    price_max = request.GET.get('input-max', 0)
+
+    # error_message is now set above for XSS or below for invalid filters
+    # Validate category_id is an integer
+    invalid_sql_input = False
+    try:
+        category_id = int(category_id)
+    except (ValueError, TypeError):
+        category_id = 0
+        error_message = "Invalid or potentially dangerous category filter. Please use a valid category."
+        invalid_sql_input = True
+
+    # Validate price_min and price_max are floats
+    try:
+        price_min = float(price_min)
+    except (ValueError, TypeError):
+        price_min = 0.0
+        error_message = "Invalid or potentially dangerous minimum price filter. Please use a valid number."
+        invalid_sql_input = True
+    try:
+        price_max = float(price_max)
+    except (ValueError, TypeError):
+        price_max = 0.0
+        error_message = "Invalid or potentially dangerous maximum price filter. Please use a valid number."
+        invalid_sql_input = True
     for product in items:
             if product.discount > 0:
                 print("discount")
@@ -46,18 +80,16 @@ def browse(request):
         items_with_images.append(product_data)
    
     
-    if category_id:
-        items=items.filter(category_id=category_id)
 
-        for item in items:
-            if(item.discount > 0):
-                discounted_price = Decimal(product.price) * (1 - Decimal(product.discount) / 100)
-                item.discounted_price=discounted_price
-
-       
+    if invalid_sql_input:
         items_with_images = []
-       
-
+    elif category_id:
+        items = items.filter(category_id=category_id)
+        for item in items:
+            if item.discount > 0:
+                discounted_price = Decimal(item.price) * (1 - Decimal(item.discount) / 100)
+                item.discounted_price = discounted_price
+        items_with_images = []
         for product in items:
             item_image_gallery = ItemImageGallery.objects.filter(item=product).first()
             product_data = {
@@ -65,7 +97,6 @@ def browse(request):
                 'image_url': item_image_gallery.images.first().image.url if item_image_gallery and item_image_gallery.images.exists() else None,
             }
             items_with_images.append(product_data)
-
     elif query:
         items = items.filter(name__icontains=query)
         items_with_images = []
@@ -76,11 +107,9 @@ def browse(request):
                 'image_url': item_image_gallery.images.first().image.url if item_image_gallery and item_image_gallery.images.exists() else None,
             }
             items_with_images.append(product_data)
-
     elif is_valid_queryparam(price_min) and is_valid_queryparam(price_max):
-        items = Item.objects.filter(price__range=(float(price_min),float(price_max)))
+        items = Item.objects.filter(price__range=(price_min, price_max))
         items_with_images = []
-
         for product in items:
             item_image_gallery = ItemImageGallery.objects.filter(item=product).first()
             product_data = {
@@ -93,7 +122,7 @@ def browse(request):
         'items_with_images': items_with_images,
         'query': query,
         'categories': categories,
-        
+        'error_message': error_message,
     })
 
 from django.shortcuts import redirect
@@ -271,8 +300,9 @@ def edit(request, pk):
 
 
 def Category_view(request,pro):
-    category=Category.objects.get(name=pro)
-    products=Item.objects.filter(category=category)
+    from django.shortcuts import get_object_or_404
+    category = get_object_or_404(Category, name=pro)
+    products = Item.objects.filter(category=category)
 
     items_with_images = []
     for product in products:
