@@ -35,6 +35,9 @@ def initiate_khalti_payment(request, bill_no):
     # Convert USD to NPR (default rate: 133)
     usd_to_npr = 133
     npr_amount = int(float(bill.discount_price or bill.total_amount) * usd_to_npr * 100)  # in paisa
+    # Decrypt encrypted fields for Khalti
+    customer_email = bill.customer.email if hasattr(bill.customer, 'email') else ''
+    contact_number = bill.contact_info if bill.contact_info else "9800000000"
     payload = {
         "return_url": request.build_absolute_uri("/khalti/callback/"),
         "website_url": request.build_absolute_uri("/"),
@@ -43,8 +46,8 @@ def initiate_khalti_payment(request, bill_no):
         "purchase_order_name": str(bill.item),
         "customer_info": {
             "name": bill.customer.get_full_name() or bill.customer.username,
-            "email": bill.customer.email,
-            "phone": bill.contact_info or "9800000000"
+            "email": customer_email,
+            "phone": contact_number
         },
         "product_details": [
             {
@@ -61,7 +64,10 @@ def initiate_khalti_payment(request, bill_no):
         "Content-Type": "application/json"
     }
     resp = requests.post("https://dev.khalti.com/api/v2/epayment/initiate/", data=json.dumps(payload), headers=headers)
-    resp_data = resp.json()
+    try:
+        resp_data = resp.json()
+    except Exception:
+        return render(request, "core/payment_failed.html", {"error": "Khalti did not return valid JSON. Status: {} Body: {}".format(resp.status_code, resp.text)})
     if resp.status_code == 200 and resp_data.get("payment_url"):
         return HttpResponseRedirect(resp_data["payment_url"])
     else:
@@ -243,7 +249,7 @@ def signup(request):
     if request.method == 'POST':
         if form.is_valid():
             username = sanitize_backend_input(str(form.cleaned_data['username']))
-            password = sanitize_backend_input(str(form.cleaned_data['password']))
+            password = sanitize_backend_input(str(form.cleaned_data['password1']))
             email = sanitize_backend_input(str(form.cleaned_data['email']))
             try:
                 validate_backend_input(username)
@@ -256,6 +262,24 @@ def signup(request):
                 else:
                     user = User.objects.create_user(username=username, password=password, email=email)
                     user.save()
+                    # Generate OTP
+                    import random
+                    otp = str(random.randint(100000, 999999))
+                    # Save OTP to UserProfile
+                    from userprofile.models import UserProfile
+                    user_profile, created = UserProfile.objects.get_or_create(user=user)
+                    user_profile.email_otp = otp
+                    user_profile.is_email_verified = False
+                    user_profile.save()
+                    # Send OTP email
+                    from django.core.mail import send_mail
+                    from herbsbazaar import settings
+                    subject = 'Your Herbs Bazaar Email Verification OTP'
+                    message = f'Your OTP for email verification is: {otp}'
+                    from_email = settings.EMAIL_HOST_USER if hasattr(settings, 'EMAIL_HOST_USER') else None
+                    send_mail(subject, message, from_email, [email], fail_silently=False)
+                    # Store pending user id in session
+                    request.session['pending_user_id'] = user.id
                     # Audit log for signup
                     from core.models import AuditLog
                     AuditLog.objects.create(
@@ -274,7 +298,7 @@ def signup(request):
                         ip_address=request.META.get('REMOTE_ADDR'),
                         user_agent=request.META.get('HTTP_USER_AGENT')
                     )
-                    return redirect('core:login')
+                    return redirect('core:verify_otp')
             except SuspiciousOperation as se:
                 error_message = str(se)
             except Exception as e:
