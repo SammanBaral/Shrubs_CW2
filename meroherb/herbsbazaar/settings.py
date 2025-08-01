@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'userprofile',
     'sellerform',
     'chatting',
+    'sslserver',  # For local HTTPS support
 ]
 
 MIDDLEWARE = [

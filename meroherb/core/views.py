@@ -152,6 +152,22 @@ def custom_login(request):
     error_message = None
     if request.method == 'POST':
         try:
+            # Global brute-force protection (per session)
+            max_attempts = 5
+            lockout_minutes = 15
+            failed_attempts = request.session.get('global_failed_login_attempts', 0)
+            lockout_until = request.session.get('global_lockout_until')
+            from datetime import datetime, timedelta
+            import pytz
+            now = timezone.now()
+            if lockout_until:
+                lockout_until_dt = datetime.fromisoformat(lockout_until)
+                if now < lockout_until_dt.replace(tzinfo=pytz.UTC):
+                    error_message = 'Too many failed login attempts. Try again later.'
+                    return render(request, 'core/login.html', {'form': form, 'error_message': error_message})
+                else:
+                    request.session['global_failed_login_attempts'] = 0
+                    request.session['global_lockout_until'] = None
             raw_username = str(request.POST.get('username', ''))
             raw_password = str(request.POST.get('password', ''))
             # Validate raw input first for XSS/NoSQL
@@ -162,22 +178,85 @@ def custom_login(request):
             password = sanitize_backend_input(raw_password)
             user_qs = User.objects.filter(username=username)
             user = user_qs.first() if user_qs.exists() else None
-            # Brute-force protection and lockout logic
             user_profile = None
             if user:
+                from django.db import transaction
                 try:
-                    user_profile = UserProfile.objects.get(user=user)
+                    with transaction.atomic():
+                        user_profile = UserProfile.objects.select_for_update().get(user=user)
+                        now_time = timezone.now()
+                        # Check lockout
+                        if user_profile.lockout_until and now_time < user_profile.lockout_until:
+                            error_message = 'Account locked due to too many failed attempts. Try again later.'
+                            return render(request, 'core/login.html', {'form': form, 'error_message': error_message})
+                        elif user_profile.lockout_until and now_time >= user_profile.lockout_until:
+                            # Lockout expired, reset counters
+                            user_profile.failed_login_attempts = 0
+                            user_profile.lockout_until = None
+                            user_profile.save()
+                        # Authenticate inside the lock
+                        from django.contrib.auth import authenticate, login
+                        user_auth = authenticate(request, username=username, password=password)
+                        if user_auth is not None:
+                            # Password expiry enforcement
+                            from userprofile.views import PasswordHistory
+                            last_pw = PasswordHistory.objects.filter(user=user_auth).order_by('-changed_at').first()
+                            password_expired = False
+                            if last_pw and (now - last_pw.changed_at).days > 30:
+                                password_expired = True
+                            if password_expired:
+                                messages.error(request, 'Your password has expired. Please set a new password.')
+                                from userprofile.views import userprofile
+                                # Render password change form directly
+                                password_change_form = PasswordChangeForm(user_auth)
+                                user_profile_instance = None
+                                try:
+                                    user_profile_instance = UserProfile.objects.get(user=user_auth)
+                                except UserProfile.DoesNotExist:
+                                    user_profile_instance = UserProfile.objects.create(user=user_auth)
+                                user_profile_form = UserProfileForm(instance=user_profile_instance)
+                                return render(request, 'userprofile/userprofile.html', {
+                                    'user': user_auth,
+                                    'user_profile_form': user_profile_form,
+                                    'password_change_form': password_change_form,
+                                    'error_message': 'Your password has expired. Please set a new password.',
+                                    'password_expired': True
+                                })
+                            # Only reset failed attempts if not locked out
+                            user_profile.failed_login_attempts = 0
+                            user_profile.lockout_until = None
+                            user_profile.save()
+                            login(request, user_auth)
+                            from core.models import AuditLog
+                            AuditLog.objects.create(
+                                user=user_auth,
+                                user_role='admin' if user_auth.is_superuser else 'customer',
+                                action='LOGIN',
+                                entity='User',
+                                entity_id=str(user_auth.id),
+                                old_value=None,
+                                new_value=None,
+                                ip_address=request.META.get('REMOTE_ADDR'),
+                                user_agent=request.META.get('HTTP_USER_AGENT')
+                            )
+                            return redirect('core:main')
+                        else:
+                            user_profile.failed_login_attempts += 1
+                            if user_profile.failed_login_attempts >= max_attempts:
+                                user_profile.lockout_until = timezone.now() + timedelta(minutes=lockout_minutes)
+                                user_profile.save(update_fields=['failed_login_attempts', 'lockout_until'])
+                                error_message = f'Account locked for {lockout_minutes} minutes due to too many failed attempts.'
+                            else:
+                                user_profile.save(update_fields=['failed_login_attempts'])
+                                error_message = f'Invalid username or password. {max_attempts - user_profile.failed_login_attempts} attempts left.'
                 except UserProfile.DoesNotExist:
-                    user_profile = None
-            if user_profile and user_profile.lockout_until:
-                if timezone.now() < user_profile.lockout_until:
+                    user_profile = UserProfile.objects.create(user=user)
+            if user is not None:
+                # Check lockout again before authenticating
+                now_time = timezone.now()
+                if user_profile.lockout_until and now_time < user_profile.lockout_until:
                     error_message = 'Account locked due to too many failed attempts. Try again later.'
                     return render(request, 'core/login.html', {'form': form, 'error_message': error_message})
-                else:
-                    user_profile.failed_login_attempts = 0
-                    user_profile.lockout_until = None
-                    user_profile.save()
-            if user is not None:
                 from django.contrib.auth import authenticate, login
                 user_auth = authenticate(request, username=username, password=password)
                 if user_auth is not None:
@@ -185,7 +264,7 @@ def custom_login(request):
                     from userprofile.views import PasswordHistory
                     last_pw = PasswordHistory.objects.filter(user=user_auth).order_by('-changed_at').first()
                     password_expired = False
-                    if last_pw and (timezone.now() - last_pw.changed_at).days > 30:
+                    if last_pw and (now - last_pw.changed_at).days > 30:
                         password_expired = True
                     if password_expired:
                         messages.error(request, 'Your password has expired. Please set a new password.')
@@ -205,10 +284,10 @@ def custom_login(request):
                             'error_message': 'Your password has expired. Please set a new password.',
                             'password_expired': True
                         })
-                    if user_profile:
-                        user_profile.failed_login_attempts = 0
-                        user_profile.lockout_until = None
-                        user_profile.save()
+                    # Only reset failed attempts if not locked out
+                    user_profile.failed_login_attempts = 0
+                    user_profile.lockout_until = None
+                    user_profile.save()
                     login(request, user_auth)
                     from core.models import AuditLog
                     AuditLog.objects.create(
@@ -224,16 +303,16 @@ def custom_login(request):
                     )
                     return redirect('core:main')
                 else:
-                    if user_profile:
-                        user_profile.failed_login_attempts += 1
-                        if user_profile.failed_login_attempts >= 5:
-                            user_profile.lockout_until = timezone.now() + timedelta(minutes=15)
-                            error_message = 'Account locked for 15 minutes due to too many failed attempts.'
-                        else:
-                            error_message = f'Invalid username or password. {5 - user_profile.failed_login_attempts} attempts left.'
-                        user_profile.save()
+                    # Atomic increment to prevent race condition
+                    from django.db.models import F
+                    UserProfile.objects.filter(pk=user_profile.pk).update(failed_login_attempts=F('failed_login_attempts') + 1)
+                    user_profile.refresh_from_db()
+                    if user_profile.failed_login_attempts >= max_attempts:
+                        user_profile.lockout_until = timezone.now() + timedelta(minutes=lockout_minutes)
+                        user_profile.save(update_fields=['lockout_until'])
+                        error_message = f'Account locked for {lockout_minutes} minutes due to too many failed attempts.'
                     else:
-                        error_message = 'Invalid username or password.'
+                        error_message = f'Invalid username or password. {max_attempts - user_profile.failed_login_attempts} attempts left.'
             else:
                 error_message = 'Invalid username or password.'
         except SuspiciousOperation as se:
